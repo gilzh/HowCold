@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lake Temperatures — Lachen, Lake Zurich</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      padding: 32px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 32px;
+    }
+    header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a365d;
+    }
+    header p {
+      font-size: 14px;
+      color: #718096;
+      margin-top: 4px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
+      padding: 32px;
+    }
+    .stats {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    .stat {
+      flex: 1;
+      padding: 16px 20px;
+      background: #f7fafc;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+    .stat.current { border-color: #3182ce; }
+    .stat.high    { border-color: #e53e3e; }
+    .stat.low     { border-color: #3182ce; }
+    .stat.avg     { border-color: #805ad5; }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #a0aec0;
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #2d3748;
+    }
+    .stat-value span {
+      font-size: 16px;
+      font-weight: 400;
+      color: #a0aec0;
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 380px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #a0aec0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Lake Temperatures — Lachen, Lake Zurich</h1>
+      <p>Measured every 3 hours by badi-info.ch &middot; Updated automatically</p>
+    </header>
+
+    <div class="card">
+      <div class="stats">
+        <div class="stat current">
+          <div class="stat-label">Current</div>
+          <div class="stat-value" id="stat-current">—</div>
+        </div>
+        <div class="stat high">
+          <div class="stat-label">Highest</div>
+          <div class="stat-value" id="stat-high">—</div>
+        </div>
+        <div class="stat low">
+          <div class="stat-label">Lowest</div>
+          <div class="stat-value" id="stat-low">—</div>
+        </div>
+        <div class="stat avg">
+          <div class="stat-label">Average</div>
+          <div class="stat-value" id="stat-avg">—</div>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+
+    <footer>
+      Data source: badi-info.ch &middot; Auto-collected by LakeTemperatures
+    </footer>
+  </div>
+
+  <script>
+    // Deduplicated data extracted from lake-temperatures.csv
+    // Format: [ISO timestamp, temperature]
+    const RAW_DATA = [
+      ["2026-02-16T12:00", 4.4],
+      ["2026-02-16T18:00", 4.4],
+      ["2026-02-17T06:00", 4.4],
+      ["2026-02-17T09:00", 4.4],
+      ["2026-02-17T12:00", 4.4],
+      ["2026-02-17T15:00", 4.5],
+      ["2026-02-17T18:00", 4.4],
+      ["2026-02-17T21:00", 4.4],
+      ["2026-02-18T06:00", 4.3],
+      ["2026-02-18T09:00", 4.3],
+      ["2026-02-18T12:00", 4.4],
+      ["2026-02-18T18:00", 4.4],
+      ["2026-02-18T21:00", 4.4],
+      ["2026-02-19T09:00", 4.3],
+      ["2026-02-19T12:00", 4.4],
+      ["2026-02-19T15:00", 4.4],
+      ["2026-02-19T18:00", 4.4],
+      ["2026-02-20T00:00", 4.4],
+      ["2026-02-20T09:00", 4.3],
+      ["2026-02-20T12:00", 4.4],
+      ["2026-02-20T15:00", 4.4],
+      ["2026-02-20T18:00", 4.3],
+      ["2026-02-20T21:00", 4.3],
+      ["2026-02-21T06:00", 4.3],
+      ["2026-02-21T09:00", 4.3],
+    ];
+
+    const dataPoints = RAW_DATA.map(([ts, temp]) => ({ x: new Date(ts), y: temp }));
+
+    // Stats
+    const temps = dataPoints.map(d => d.y);
+    const current = temps[temps.length - 1];
+    const high = Math.max(...temps);
+    const low = Math.min(...temps);
+    const avg = temps.reduce((a, b) => a + b, 0) / temps.length;
+
+    document.getElementById('stat-current').innerHTML = `${current.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-high').innerHTML = `${high.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-low').innerHTML = `${low.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-avg').innerHTML = `${avg.toFixed(1)}<span>&deg;C</span>`;
+
+    // Chart
+    const ctx = document.getElementById('chart').getContext('2d');
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 380);
+    gradient.addColorStop(0, 'rgba(49, 130, 206, 0.25)');
+    gradient.addColorStop(1, 'rgba(49, 130, 206, 0.02)');
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'Water Temperature',
+          data: dataPoints,
+          borderColor: '#3182ce',
+          backgroundColor: gradient,
+          borderWidth: 2.5,
+          pointBackgroundColor: '#3182ce',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1a365d',
+            titleFont: { size: 13, weight: '600' },
+            bodyFont: { size: 14, weight: '700' },
+            cornerRadius: 8,
+            padding: 12,
+            displayColors: false,
+            callbacks: {
+              title: (items) => {
+                const d = new Date(items[0].parsed.x);
+                return d.toLocaleDateString('en-GB', {
+                  weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                });
+              },
+              label: (item) => `${item.parsed.y.toFixed(1)} °C`,
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'day',
+              displayFormats: { day: 'EEE dd MMM', hour: 'HH:mm' },
+              tooltipFormat: 'EEE dd MMM HH:mm',
+            },
+            grid: { display: false },
+            ticks: {
+              font: { size: 12, weight: '600' },
+              color: '#a0aec0',
+              maxRotation: 0,
+            },
+            border: { display: false },
+          },
+          y: {
+            min: Math.floor(low * 2) / 2 - 0.5,
+            max: Math.ceil(high * 2) / 2 + 0.5,
+            grid: {
+              color: '#edf2f7',
+              drawBorder: false,
+            },
+            ticks: {
+              font: { size: 12, weight: '600' },
+              color: '#a0aec0',
+              callback: (val) => val.toFixed(1) + '°C',
+              stepSize: 0.1,
+            },
+            border: { display: false },
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
