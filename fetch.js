@@ -91,7 +91,7 @@ async function main() {
   const csvPath = path.join(__dirname, "temperatures.csv");
   const fileExists = fs.existsSync(csvPath);
   if (!fileExists) {
-    fs.writeFileSync(csvPath, "Day,Time,Temperature,AirTemp\n");
+    fs.writeFileSync(csvPath, "Day,Time,WaterTemp,AirTemp\n");
   }
   const now = new Date();
   const day = now.toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "numeric" });
