@@ -69,6 +69,16 @@
       font-weight: 400;
       color: #a0aec0;
     }
+    .stat-secondary {
+      font-size: 16px;
+      font-weight: 600;
+      color: #a0aec0;
+      margin-top: 2px;
+    }
+    .stat-secondary span {
+      font-size: 13px;
+      font-weight: 400;
+    }
     .chart-wrapper {
       position: relative;
       height: 380px;
@@ -93,6 +103,7 @@
         <div class="stat current">
           <div class="stat-label" id="label-current">Latest</div>
           <div class="stat-value" id="stat-current">—</div>
+          <div class="stat-secondary" id="stat-current-air">—</div>
         </div>
         <div class="stat avg5d">
           <div class="stat-label">5-Day Average</div>
@@ -178,16 +189,27 @@
 
     // Stats
     const temps = dataPoints.map(d => d.water);
-    const current = temps[temps.length - 1];
+    const lastWater = [...dataPoints].reverse().find(d => d.water != null);
+    const lastAir   = [...dataPoints].reverse().find(d => d.air != null);
     const cutoff = new Date(dataPoints[dataPoints.length - 1].x);
     cutoff.setDate(cutoff.getDate() - 5);
     const recent = dataPoints.filter(d => d.x >= cutoff).map(d => d.water);
     const avg5d = recent.reduce((a, b) => a + b, 0) / recent.length;
-    const latestDate = dataPoints[dataPoints.length - 1].x;
-    const latestLabel = latestDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).replace(' ', ' ')
-      + ' ' + String(latestDate.getHours()).padStart(2, '0') + 'h';
-    document.getElementById('label-current').textContent = `Latest · ${latestLabel}`;
-    document.getElementById('stat-current').innerHTML = `${current.toFixed(1)}<span>&deg;C</span>`;
+
+    const fmtDate = (d) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+      + ' ' + String(d.getHours()).padStart(2, '0') + 'h';
+    const waterLabel = fmtDate(lastWater.x);
+    const airLabel   = fmtDate(lastAir.x);
+    const sameTime   = waterLabel === airLabel;
+    document.getElementById('label-current').textContent = sameTime
+      ? `Latest · ${waterLabel}`
+      : 'Latest';
+    document.getElementById('stat-current').innerHTML =
+      `🌊 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`
+      + (sameTime ? '' : `<span style="font-size:11px;font-weight:400;display:block;color:#a0aec0">${waterLabel}</span>`);
+    document.getElementById('stat-current-air').innerHTML =
+      `🌡 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`
+      + (sameTime ? '' : `<span style="font-size:11px;font-weight:400;display:block;color:#a0aec0">${airLabel}</span>`);
     document.getElementById('stat-avg5d').innerHTML = `${avg5d.toFixed(1)}<span>&deg;C</span>`;
 
     // Chart
