@@ -193,6 +193,15 @@
     // Chart
     const ctx = document.getElementById('chart').getContext('2d');
 
+    // One tick per month, at the timestamp of the first data point in that month
+    const monthTickValues = Object.values(
+      dataPoints.reduce((acc, d) => {
+        const key = `${d.x.getFullYear()}-${d.x.getMonth()}`;
+        if (!acc[key]) acc[key] = d.x.getTime();
+        return acc;
+      }, {})
+    );
+
     const gradient = ctx.createLinearGradient(0, 0, 0, 380);
     gradient.addColorStop(0, 'rgba(49, 130, 206, 0.25)');
     gradient.addColorStop(1, 'rgba(49, 130, 206, 0.02)');
@@ -272,15 +281,17 @@
           x: {
             type: 'time',
             time: {
-              unit: 'day',
-              displayFormats: { day: 'dd MMM', hour: 'HH:mm' },
               tooltipFormat: 'dd MMM HH:mm',
+            },
+            afterBuildTicks: (axis) => {
+              axis.ticks = monthTickValues.map(v => ({ value: v }));
             },
             grid: { display: false },
             ticks: {
               font: { size: 12, weight: '600' },
               color: '#a0aec0',
               maxRotation: 0,
+              callback: (value) => new Date(value).toLocaleDateString('en-GB', { month: 'short' }),
             },
             border: { display: false },
           },
