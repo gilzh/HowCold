@@ -25,6 +25,22 @@ function fetchPage(url) {
   });
 }
 
+function fetchAirTemp() {
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=47.1983&longitude=8.8561&current=temperature_2m&timezone=Europe%2FZurich";
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: { "User-Agent": "Mozilla/5.0" } }, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        try {
+          const json = JSON.parse(data);
+          resolve(json.current.temperature_2m);
+        } catch (e) { reject(e); }
+      });
+    }).on("error", reject);
+  });
+}
+
 function parseTemperature(html) {
   // Temperature appears as e.g. <b id="t3">4.6</b>&deg;C
   const tempMatch = html.match(/<b id="t\d+">([0-9.]+)<\/b>/);
@@ -64,10 +80,10 @@ function sendEmail(recipient, subject, body) {
 async function main() {
   console.log(`[${new Date().toISOString()}] Fetching water temperature for Lachen...`);
 
-  const html = await fetchPage(URL);
+  const [html, airTemp] = await Promise.all([fetchPage(URL), fetchAirTemp()]);
   const { temperature, timestamp } = parseTemperature(html);
 
-  console.log(`Temperature: ${temperature}°C (measured ${timestamp})`);
+  console.log(`Water: ${temperature}°C (measured ${timestamp}), Air: ${airTemp}°C`);
 
   const message = `🌊 ${temperature}°C https://gilzh.github.io/HowCold`;
 
@@ -75,12 +91,12 @@ async function main() {
   const csvPath = path.join(__dirname, "temperatures.csv");
   const fileExists = fs.existsSync(csvPath);
   if (!fileExists) {
-    fs.writeFileSync(csvPath, "Day,Time,Temperature\n");
+    fs.writeFileSync(csvPath, "Day,Time,Temperature,AirTemp\n");
   }
   const now = new Date();
   const day = now.toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "numeric" });
   const time = now.toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" });
-  fs.appendFileSync(csvPath, `${day},${time},${temperature}\n`);
+  fs.appendFileSync(csvPath, `${day},${time},${temperature},${airTemp}\n`);
   console.log(`Temperature logged to ${csvPath}`);
 
   sendIMessage(RECIPIENT, message);
