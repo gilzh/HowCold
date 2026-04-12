@@ -49,8 +49,8 @@
       border-radius: 8px;
       border-left: 4px solid;
     }
-    .stat.current { border-color: #3182ce; }
-    .stat.avg5d   { border-color: #805ad5; }
+    .stat.water { border-color: #3182ce; }
+    .stat.air   { border-color: #e53e3e; }
     .stat-label {
       font-size: 11px;
       font-weight: 600;
@@ -100,15 +100,15 @@
 
     <div class="card">
       <div class="stats">
-        <div class="stat current">
-          <div class="stat-label" id="label-current">Latest</div>
-          <div class="stat-value" id="stat-current">—</div>
-          <div class="stat-secondary" id="stat-current-air">—</div>
+        <div class="stat water">
+          <div class="stat-label" id="label-water">Water</div>
+          <div class="stat-value" id="stat-water-latest">—</div>
+          <div class="stat-secondary" id="stat-water-avg">—</div>
         </div>
-        <div class="stat avg5d">
-          <div class="stat-label">5-Day Average</div>
-          <div class="stat-value" id="stat-avg5d">—</div>
-          <div class="stat-secondary" id="stat-avg5d-air">—</div>
+        <div class="stat air">
+          <div class="stat-label" id="label-air">Air</div>
+          <div class="stat-value" id="stat-air-latest">—</div>
+          <div class="stat-secondary" id="stat-air-avg">—</div>
         </div>
       </div>
       <div class="chart-wrapper">
@@ -200,20 +200,12 @@
 
     const fmtDate = (d) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
       + ' ' + String(d.getHours()).padStart(2, '0') + 'h';
-    const waterLabel = fmtDate(lastWater.x);
-    const airLabel   = fmtDate(lastAir.x);
-    const sameTime   = waterLabel === airLabel;
-    document.getElementById('label-current').textContent = sameTime
-      ? `Latest · ${waterLabel}`
-      : 'Latest';
-    document.getElementById('stat-current').innerHTML =
-      `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`
-      + (sameTime ? '' : `<span style="font-size:11px;font-weight:400;display:block;color:#a0aec0">${waterLabel}</span>`);
-    document.getElementById('stat-current-air').innerHTML =
-      `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`
-      + (sameTime ? '' : `<span style="font-size:11px;font-weight:400;display:block;color:#a0aec0">${airLabel}</span>`);
-    document.getElementById('stat-avg5d').innerHTML = `💦 ${avg5d.toFixed(1)}<span>&deg;C</span>`;
-    document.getElementById('stat-avg5d-air').innerHTML = `💨 ${avg5dAir.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('label-water').textContent = `Water · ${fmtDate(lastWater.x)}`;
+    document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-water-avg').innerHTML    = `🗓️ ${avg5d.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('label-air').textContent = `Air · ${fmtDate(lastAir.x)}`;
+    document.getElementById('stat-air-latest').innerHTML = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-air-avg').innerHTML    = `🗓️ ${avg5dAir.toFixed(1)}<span>&deg;C</span>`;
 
     // Chart
     const ctx = document.getElementById('chart').getContext('2d');
