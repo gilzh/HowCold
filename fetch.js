@@ -69,10 +69,10 @@ async function main() {
 
   console.log(`Temperature: ${temperature}°C (measured ${timestamp})`);
 
-  const message = `Good morning! The water temperature in Lachen (Lake Zürich) is currently ${temperature}°C (measured ${timestamp}).`;
+  const message = `🌊 ${temperature}°C https://gilzh.github.io/HowCold`;
 
   // Append to CSV
-  const csvPath = path.join(__dirname, "lake-temperatures.csv");
+  const csvPath = path.join(__dirname, "temperatures.csv");
   const fileExists = fs.existsSync(csvPath);
   if (!fileExists) {
     fs.writeFileSync(csvPath, "Day,Time,Temperature\n");
@@ -83,8 +83,8 @@ async function main() {
   fs.appendFileSync(csvPath, `${day},${time},${temperature}\n`);
   console.log(`Temperature logged to ${csvPath}`);
 
-  // sendIMessage(RECIPIENT, message);
-  // console.log(`iMessage sent to ${RECIPIENT}`);
+  sendIMessage(RECIPIENT, message);
+  console.log(`iMessage sent to ${RECIPIENT}`);
 
   // const subject = `Water Temperature Lachen: ${temperature}°C`;
   // sendEmail(RECIPIENT, subject, message);

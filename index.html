@@ -50,9 +50,7 @@
       border-left: 4px solid;
     }
     .stat.current { border-color: #3182ce; }
-    .stat.high    { border-color: #e53e3e; }
-    .stat.low     { border-color: #3182ce; }
-    .stat.avg     { border-color: #805ad5; }
+    .stat.avg5d   { border-color: #805ad5; }
     .stat-label {
       font-size: 11px;
       font-weight: 600;
@@ -87,26 +85,18 @@
   <div class="container">
     <header>
       <h1><img src="loutre-portrait.png" alt="Loutre" style="width: 40px; height: 40px; vertical-align: middle; margin-right: 8px; border-radius: 50%;"> How Cold?</h1>
-      <p>Lachen water temperature, every day @9am ☀️</p>
+      <p>Lachen water temperatures, daily ☀️</p>
     </header>
 
     <div class="card">
       <div class="stats">
         <div class="stat current">
-          <div class="stat-label">Current</div>
+          <div class="stat-label" id="label-current">Latest</div>
           <div class="stat-value" id="stat-current">—</div>
         </div>
-        <div class="stat high">
-          <div class="stat-label">Highest</div>
-          <div class="stat-value" id="stat-high">—</div>
-        </div>
-        <div class="stat low">
-          <div class="stat-label">Lowest</div>
-          <div class="stat-value" id="stat-low">—</div>
-        </div>
-        <div class="stat avg">
-          <div class="stat-label">Average</div>
-          <div class="stat-value" id="stat-avg">—</div>
+        <div class="stat avg5d">
+          <div class="stat-label">5-Day Average</div>
+          <div class="stat-value" id="stat-avg5d">—</div>
         </div>
       </div>
       <div class="chart-wrapper">
@@ -174,14 +164,16 @@
     // Stats
     const temps = dataPoints.map(d => d.y);
     const current = temps[temps.length - 1];
-    const high = Math.max(...temps);
-    const low = Math.min(...temps);
-    const avg = temps.reduce((a, b) => a + b, 0) / temps.length;
-
+    const cutoff = new Date(dataPoints[dataPoints.length - 1].x);
+    cutoff.setDate(cutoff.getDate() - 5);
+    const recent = dataPoints.filter(d => d.x >= cutoff).map(d => d.y);
+    const avg5d = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const latestDate = dataPoints[dataPoints.length - 1].x;
+    const latestLabel = latestDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).replace(' ', ' ')
+      + ' ' + String(latestDate.getHours()).padStart(2, '0') + 'h';
+    document.getElementById('label-current').textContent = `Latest · ${latestLabel}`;
     document.getElementById('stat-current').innerHTML = `${current.toFixed(1)}<span>&deg;C</span>`;
-    document.getElementById('stat-high').innerHTML = `${high.toFixed(1)}<span>&deg;C</span>`;
-    document.getElementById('stat-low').innerHTML = `${low.toFixed(1)}<span>&deg;C</span>`;
-    document.getElementById('stat-avg').innerHTML = `${avg.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-avg5d').innerHTML = `${avg5d.toFixed(1)}<span>&deg;C</span>`;
 
     // Chart
     const ctx = document.getElementById('chart').getContext('2d');
@@ -252,8 +244,8 @@
             border: { display: false },
           },
           y: {
-            min: Math.floor(low * 2) / 2 - 0.5,
-            max: Math.ceil(high * 2) / 2 + 0.5,
+            min: Math.floor(Math.min(...temps) * 2) / 2 - 0.5,
+            max: Math.ceil(Math.max(...temps) * 2) / 2 + 0.5,
             grid: {
               color: '#edf2f7',
               drawBorder: false,
