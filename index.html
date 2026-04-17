@@ -143,6 +143,52 @@
     // Measured readings use actual timestamps; model-filled days use 09:00.
     // Data from temperatures.csv + EAWAG Alplakes model (delft3d-flow/zurich, 0.5m depth)
     const RAW_DATA = [
+      ["2026-01-01T07:00", 4.0, -1.2],
+      ["2026-01-02T07:00", 4.0, -0.7],
+      ["2026-01-03T07:00", 4.0, -0.2],
+      ["2026-01-04T07:00", 4.0, 0.3],
+      ["2026-01-05T07:00", 4.0, 0.6],
+      ["2026-01-06T07:00", 4.0, 0.8],
+      ["2026-01-07T07:00", 4.0, 0.9],
+      ["2026-01-08T07:00", 4.0, 0.8],
+      ["2026-01-09T07:00", 4.0, 0.6],
+      ["2026-01-10T07:00", 4.0, 0.3],
+      ["2026-01-11T07:00", 4.0, -0.1],
+      ["2026-01-12T07:00", 4.0, -0.6],
+      ["2026-01-13T07:00", 4.0, -1.0],
+      ["2026-01-14T07:00", 4.0, -1.5],
+      ["2026-01-15T07:00", 4.0, -1.8],
+      ["2026-01-16T07:00", 4.0, -2.1],
+      ["2026-01-17T07:00", 4.0, -2.2],
+      ["2026-01-18T07:00", 4.0, -2.2],
+      ["2026-01-19T07:00", 4.0, -2.1],
+      ["2026-01-20T07:00", 4.0, -1.8],
+      ["2026-01-21T07:00", 4.0, -1.5],
+      ["2026-01-22T07:00", 4.0, -1.0],
+      ["2026-01-23T07:00", 4.0, -0.5],
+      ["2026-01-24T07:00", 4.0, 0.1],
+      ["2026-01-25T07:00", 4.0, 0.6],
+      ["2026-01-26T07:00", 4.0, 1.1],
+      ["2026-01-27T07:00", 4.0, 1.4],
+      ["2026-01-28T07:00", 4.0, 1.7],
+      ["2026-01-29T07:00", 4.0, 1.8],
+      ["2026-01-30T07:00", 4.0, 1.8],
+      ["2026-01-31T07:00", 4.0, 1.7],
+      ["2026-02-01T07:00", 4.0, 1.4],
+      ["2026-02-02T07:00", 4.0, 1.1],
+      ["2026-02-03T07:00", 4.0, 0.6],
+      ["2026-02-04T07:00", 4.0, 0.2],
+      ["2026-02-05T07:00", 4.0, -0.3],
+      ["2026-02-06T07:00", 4.0, -0.7],
+      ["2026-02-07T07:00", 4.0, -1.0],
+      ["2026-02-08T07:00", 4.0, -1.2],
+      ["2026-02-09T07:00", 5.0, -1.3],
+      ["2026-02-10T07:00", 5.0, -1.2],
+      ["2026-02-11T07:00", 5.0, -1.0],
+      ["2026-02-12T07:00", 5.0, -0.7],
+      ["2026-02-13T07:00", 5.0, -0.2],
+      ["2026-02-14T07:00", 5.0, 0.3],
+      ["2026-02-15T07:00", 5.0, 0.8],
       ["2026-02-16T12:00", 4.4, 4.6],
       ["2026-02-17T06:00", 4.4, 3.0],
       ["2026-02-18T11:15", 4.4, 4.2],
@@ -203,6 +249,7 @@
       ["2026-04-14T09:00", 10.6, 7.6],
       ["2026-04-15T09:00", 10.3, 9.6],
       ["2026-04-16T16:00", 12.0, 18.3],
+      ["2026-04-17T07:00", 11.4, 8.4],
     ];
 
     const dataPoints = RAW_DATA.map(([ts, water, air]) => ({ x: new Date(ts), water, air }));
@@ -219,8 +266,8 @@
 
     const fmtDate = (d) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
       + ' ' + String(d.getHours()).padStart(2, '0') + 'h';
-    document.getElementById('label-water').textContent = `Water · ${fmtDate(lastWater.x)}`;
-    document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span><span class="stat-hint">latest</span>`;
+    document.getElementById('label-water').textContent = `Water`;
+    document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span><span class="stat-hint">${fmtDate(lastWater.x)}</span>`;
     document.getElementById('stat-water-avg').innerHTML    = `🗓️ ${avg5d.toFixed(1)}<span>&deg;C</span><span class="stat-hint">last 5 days</span>`;
     document.getElementById('label-air').textContent = `Air · ${fmtDate(lastAir.x)}`;
     document.getElementById('stat-air-latest').innerHTML = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span><span class="stat-hint">latest</span>`;
