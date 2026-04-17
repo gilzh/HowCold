@@ -81,6 +81,7 @@
       color: #cbd5e0;
       margin-left: 5px;
       vertical-align: middle;
+      white-space: nowrap;
     }
     .stat-secondary span {
       font-size: 13px;
@@ -222,8 +223,8 @@
     document.getElementById('label-water').textContent = `Water`;
     document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span><span class="stat-hint">${fmtDate(lastWater.x)}</span>`;
     document.getElementById('stat-water-avg').innerHTML    = `🗓️ ${avg5d.toFixed(1)}<span>&deg;C</span><span class="stat-hint">last 5 days</span>`;
-    document.getElementById('label-air').textContent = `Air · ${fmtDate(lastAir.x)}`;
-    document.getElementById('stat-air-latest').innerHTML = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span><span class="stat-hint">latest</span>`;
+    document.getElementById('label-air').textContent = `Air`;
+    document.getElementById('stat-air-latest').innerHTML = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span><span class="stat-hint">${fmtDate(lastAir.x)}</span>`;
     document.getElementById('stat-air-avg').innerHTML    = `🗓️ ${avg5dAir.toFixed(1)}<span>&deg;C</span><span class="stat-hint">last 5 days</span>`;
 
     // Chart
