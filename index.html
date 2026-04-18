@@ -79,9 +79,9 @@
       font-size: 10px;
       font-weight: 400;
       color: #cbd5e0;
-      margin-left: 5px;
-      vertical-align: middle;
       white-space: nowrap;
+      float: right;
+      line-height: inherit;
     }
     .stat-secondary span {
       font-size: 13px;
@@ -226,11 +226,11 @@
       return `${datePart}, ${timePart}`;
     };
     document.getElementById('label-water').textContent = `Water`;
-    document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span><span class="stat-hint">${fmtDate(lastWater.x)}</span>`;
-    document.getElementById('stat-water-avg').innerHTML    = `🗓️ ${avg5d.toFixed(1)}<span>&deg;C</span><span class="stat-hint">last 5 days</span>`;
+    document.getElementById('stat-water-latest').innerHTML = `<span class="stat-hint">${fmtDate(lastWater.x)}</span>💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-water-avg').innerHTML    = `<span class="stat-hint">last 5 days</span>🗓️ ${avg5d.toFixed(1)}<span>&deg;C</span>`;
     document.getElementById('label-air').textContent = `Air`;
-    document.getElementById('stat-air-latest').innerHTML = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span><span class="stat-hint">${fmtDate(lastAir.x)}</span>`;
-    document.getElementById('stat-air-avg').innerHTML    = `🗓️ ${avg5dAir.toFixed(1)}<span>&deg;C</span><span class="stat-hint">last 5 days</span>`;
+    document.getElementById('stat-air-latest').innerHTML = `<span class="stat-hint">${fmtDate(lastAir.x)}</span>💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-air-avg').innerHTML    = `<span class="stat-hint">last 5 days</span>🗓️ ${avg5dAir.toFixed(1)}<span>&deg;C</span>`;
 
     // Chart
     const ctx = document.getElementById('chart').getContext('2d');
