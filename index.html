@@ -219,8 +219,12 @@
     const avg5d    = recent.map(d => d.water).reduce((a, b) => a + b, 0) / recent.length;
     const avg5dAir = recent.map(d => d.air).reduce((a, b) => a + b, 0) / recent.length;
 
-    const fmtDate = (d) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
-      + ' ' + String(d.getHours()).padStart(2, '0') + 'h';
+    const fmtDate = (d) => {
+      const datePart = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' });
+      const h = d.getHours();
+      const timePart = (h % 12 || 12) + (h < 12 ? 'am' : 'pm');
+      return `${datePart}, ${timePart}`;
+    };
     document.getElementById('label-water').textContent = `Water`;
     document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span><span class="stat-hint">${fmtDate(lastWater.x)}</span>`;
     document.getElementById('stat-water-avg').innerHTML    = `🗓️ ${avg5d.toFixed(1)}<span>&deg;C</span><span class="stat-hint">last 5 days</span>`;
