@@ -550,6 +550,21 @@ fetchAirTemps(CITIES).then(() => render());
       }
       const countries = topo ? topojson.feature(topo, topo.objects.countries) : null;
 
+      // Render a city name label as foreignObject so flag emoji render on iOS/Safari
+      function townLabel(x, y, name, side) {
+        const w = 80, h = 12;
+        const fx = side === 1 ? x : x - w;
+        const align = side === 1 ? 'left' : 'right';
+        const style = [
+          'font-family:Segoe UI,-apple-system,BlinkMacSystemFont,sans-serif',
+          'font-size:6px','font-weight:600','color:#2d3748',
+          'white-space:nowrap',`text-align:${align}`,
+          'text-shadow:0 0 2.5px #fff,0 0 2.5px #fff,0 0 2.5px #fff',
+          'letter-spacing:0.02em','line-height:1',
+        ].join(';');
+        return `<foreignObject x="${fx.toFixed(2)}" y="${(y - 8).toFixed(2)}" width="${w}" height="${h}"><div xmlns="http://www.w3.org/1999/xhtml" style="${style}">${name}</div></foreignObject>`;
+      }
+
       function render() {
         if (countries) {
           let d = '';
@@ -609,12 +624,12 @@ fetchAirTemps(CITIES).then(() => render());
               // water | air, both left-anchored
               labels += `<text class="temp-water" x="${tempX.toFixed(2)}" y="${yTop.toFixed(2)}" text-anchor="start">${waterStr}</text>`;
               labels += `<text class="temp-air"   x="${(tempX + waterW + gap).toFixed(2)}" y="${yTop.toFixed(2)}" text-anchor="start">${airStr}</text>`;
-              labels += `<text class="town"       x="${tempX.toFixed(2)}" y="${yBot.toFixed(2)}" text-anchor="start">${c.name}</text>`;
+              labels += townLabel(tempX, yBot, c.name, 1);
             } else {
               // right-aligned: air | water reading right-to-left
               labels += `<text class="temp-air"   x="${tempX.toFixed(2)}" y="${yTop.toFixed(2)}" text-anchor="end">${airStr}</text>`;
               labels += `<text class="temp-water" x="${(tempX - airW - gap).toFixed(2)}" y="${yTop.toFixed(2)}" text-anchor="end">${waterStr}</text>`;
-              labels += `<text class="town"       x="${tempX.toFixed(2)}" y="${yBot.toFixed(2)}" text-anchor="end">${c.name}</text>`;
+              labels += townLabel(tempX, yBot, c.name, -1);
             }
           } else {
             // Air-only cities: red temp + town name on a single line
@@ -623,7 +638,7 @@ fetchAirTemps(CITIES).then(() => render());
             const gap = 3;
             const townX = side === 1 ? tempX + tempW + gap : tempX - tempW - gap;
             labels += `<text class="temp-air" x="${tempX.toFixed(2)}" y="${(outY + 2.5).toFixed(2)}" text-anchor="${anchor}">${tempStr}</text>`;
-            labels += `<text class="town"     x="${townX.toFixed(2)}" y="${(outY + 2.5).toFixed(2)}" text-anchor="${anchor}">${c.name}</text>`;
+            labels += townLabel(townX, outY + 2.5, c.name, side);
           }
         }
         gCities.innerHTML = dots;
