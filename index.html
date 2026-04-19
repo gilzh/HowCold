@@ -113,6 +113,82 @@
       font-size: 12px;
       color: #a0aec0;
     }
+
+    /* ---------- Globe card ---------- */
+    .globe-card {
+      display: grid;
+      place-items: center;
+      padding: 40px 32px;
+    }
+    .globe-card h2 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a0aec0;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .globe-loader {
+      position: relative;
+      width: 260px;
+      height: 260px;
+    }
+    .globe-loader svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+    .whirl { position: absolute; inset: 0; pointer-events: none; }
+    .whirl svg { overflow: visible; }
+    .ring-dash { animation: spinCW 6.5s linear infinite; transform-origin: 50% 50%; }
+    .ring-arc  { animation: spinCCW 9s linear infinite, breathe 3.2s ease-in-out infinite; transform-origin: 50% 50%; }
+    @keyframes spinCW  { to { transform: rotate(360deg); } }
+    @keyframes spinCCW { to { transform: rotate(-360deg); } }
+    @keyframes breathe { 0%,100% { opacity: 0.55; } 50% { opacity: 0.95; } }
+
+    /* On-globe labels */
+    #cityLabels text {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 7px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
+      paint-order: stroke fill;
+      stroke: #fff;
+      stroke-width: 2.5px;
+      stroke-linejoin: round;
+    }
+    #cityLabels .temp-air   { fill: #e53e3e; }   /* air — HowCold red */
+    #cityLabels .temp-water { fill: #3182ce; }   /* water — HowCold blue */
+    #cityLabels .town {
+      font-size: 6px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      fill: #2d3748;
+      stroke: #fff;
+      stroke-width: 2px;
+    }
+    #cityLabels line {
+      stroke: #2d3748;
+      stroke-width: 0.5;
+      opacity: 0.5;
+    }
+
+    .globe-legend {
+      margin-top: 20px;
+      display: flex;
+      gap: 18px;
+      font-size: 11px;
+      color: #718096;
+      letter-spacing: 0.02em;
+    }
+    .globe-legend .swatch {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+    .globe-legend .sw-water { background: #3182ce; }
+    .globe-legend .sw-air   { background: #e53e3e; }
   </style>
 </head>
 <body>
@@ -140,7 +216,49 @@
       </div>
     </div>
 
-    <footer>
+
+    <!-- NEW: globe card -->
+    <div class="card globe-card">
+      <h2>Today around the world</h2>
+      <div class="globe-loader" role="img" aria-label="Spinning globe showing today's temperatures">
+        <div class="whirl">
+          <svg viewBox="0 0 200 200" aria-hidden="true">
+            <g class="ring-dash">
+              <circle cx="100" cy="100" r="96" fill="none" stroke="#2d3748" stroke-width="1" stroke-dasharray="2 6" opacity="0.45" />
+            </g>
+            <g class="ring-arc">
+              <circle cx="100" cy="100" r="90" fill="none" stroke="#2d3748" stroke-width="1.25" stroke-linecap="round" stroke-dasharray="110 330" stroke-dashoffset="0" opacity="0.75" />
+              <circle cx="100" cy="100" r="90" fill="none" stroke="#2d3748" stroke-width="1.25" stroke-linecap="round" stroke-dasharray="40 240" stroke-dashoffset="-180" opacity="0.45" />
+            </g>
+          </svg>
+        </div>
+
+        <svg id="globe" viewBox="0 0 200 200" aria-hidden="true">
+          <defs>
+            <clipPath id="disc"><circle cx="100" cy="100" r="70" /></clipPath>
+            <radialGradient id="shade" cx="50%" cy="50%" r="50%">
+              <stop offset="60%" stop-color="#000" stop-opacity="0" />
+              <stop offset="100%" stop-color="#000" stop-opacity="0.08" />
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="100" r="70" fill="#fff" stroke="#2d3748" stroke-width="1.25" />
+          <g clip-path="url(#disc)">
+            <g id="graticule" fill="none" stroke="#2d3748" stroke-width="0.4" opacity="0.22"></g>
+            <g id="countries" fill="none" stroke="#2d3748" stroke-width="0.9" stroke-linejoin="round" stroke-linecap="round"></g>
+            <g id="cities" fill="#2d3748"></g>
+            <circle cx="100" cy="100" r="70" fill="url(#shade)" />
+          </g>
+          <circle cx="100" cy="100" r="70" fill="none" stroke="#2d3748" stroke-width="1.25" />
+          <g id="cityLabels"></g>
+        </svg>
+      </div>
+      <div class="globe-legend">
+        <span><span class="swatch sw-water"></span>Water °C</span>
+        <span><span class="swatch sw-air"></span>Air °C</span>
+      </div>
+    </div>
+
+        <footer>
       🏊‍♀️ Sunday Morning Swimmers &middot; <a href="https://chat.whatsapp.com/EnH72JSFwQuGByphmu8cTi?mode=gi_t" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Join our WhatsApp group</a>
     </footer>
   </div>
@@ -377,6 +495,136 @@
         }
       }
     });
-  </script>
+
+
+    // ========== Globe loader ==========
+    (async () => {
+      const gCountries = document.getElementById('countries');
+      const gGraticule = document.getElementById('graticule');
+      const gCities    = document.getElementById('cities');
+      const gLabels    = document.getElementById('cityLabels');
+
+      // Cities: Lachen has BOTH water + air; the rest are air-only.
+      // Lachen water/air pulled live from the chart's last datapoint.
+      const CITIES = [
+        { id:'lachen',      name:'Lachen',              lon:  8.85,  lat: 47.19,
+          water: lastWater.water, air: lastAir.air, highlight: true },
+        { id:'cape-may',    name:'Cape May',            lon:-74.92, lat: 38.93, air: 14 },
+        { id:'bois-plage',  name:'Le Bois-Plage-en-Ré', lon: -1.38, lat: 46.18, air: 13 },
+        { id:'saint-malo',  name:'Saint-Malo',          lon: -2.02, lat: 48.65, air: 12 },
+        { id:'sassari',     name:'Sassari',             lon:  8.56, lat: 40.73, air: 19 },
+      ];
+
+      const projection = d3.geoOrthographic()
+        .scale(70).translate([100, 100]).clipAngle(90);
+      const path = d3.geoPath(projection);
+      const graticule = d3.geoGraticule().step([15, 15])();
+
+      const sources = [
+        'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json',
+        'https://unpkg.com/world-atlas@2/countries-110m.json',
+      ];
+      let topo = null;
+      for (const url of sources) {
+        try { const r = await fetch(url); if (r.ok) { topo = await r.json(); break; } } catch (e) {}
+      }
+      const countries = topo ? topojson.feature(topo, topo.objects.countries) : null;
+
+      function render() {
+        if (countries) {
+          let d = '';
+          for (const f of countries.features) { const s = path(f); if (s) d += s + ' '; }
+          gCountries.innerHTML = `<path d="${d.trim()}" />`;
+        }
+        gGraticule.innerHTML = `<path d="${path(graticule) || ''}" />`;
+
+        const cx = 100, cy = 100, R = 70;
+        let dots = '';
+        const items = [];
+        for (const c of CITIES) {
+          const p = projection([c.lon, c.lat]);
+          if (!p) continue;
+          const side = p[0] >= cx ? 1 : -1;
+          const outX = cx + side * (R + 14);
+          items.push({ c, p, side, outX, outY: p[1] });
+        }
+        // Lachen gets a little more vertical room (two-line label)
+        const gapFor = (it) => it.c.highlight ? 18 : 12;
+        for (const side of [-1, 1]) {
+          const group = items.filter(i => i.side === side).sort((a,b) => a.outY - b.outY);
+          for (let i = 1; i < group.length; i++) {
+            const need = Math.max(gapFor(group[i-1]), gapFor(group[i]));
+            if (group[i].outY - group[i-1].outY < need) group[i].outY = group[i-1].outY + need;
+          }
+          for (const g of group) g.outY = Math.max(20, Math.min(180, g.outY));
+        }
+
+        let labels = '';
+        for (const { c, p, side, outX, outY } of items) {
+          // Dot (larger + ringed for the highlighted spot)
+          const r = c.highlight ? 2.2 : 1.6;
+          const halo = c.highlight ? 4.6 : 3.6;
+          dots += `<circle cx="${p[0].toFixed(2)}" cy="${p[1].toFixed(2)}" r="${r}" fill="${c.highlight ? '#3182ce' : '#2d3748'}" />`;
+          dots += `<circle cx="${p[0].toFixed(2)}" cy="${p[1].toFixed(2)}" r="${halo}" fill="none" stroke="${c.highlight ? '#3182ce' : '#2d3748'}" stroke-width="0.6" opacity="0.5" />`;
+
+          // Leader
+          const labelPadX = side === 1 ? -2 : 2;
+          labels += `<line x1="${p[0].toFixed(2)}" y1="${p[1].toFixed(2)}" x2="${(outX + labelPadX).toFixed(2)}" y2="${outY.toFixed(2)}" />`;
+
+          const anchor = side === 1 ? 'start' : 'end';
+          const tempX  = side === 1 ? outX + 1 : outX - 1;
+
+          if (c.highlight) {
+            // Two-line label: "💦 13.1°  💨 11.0°" on top, town name on bottom
+            const waterStr = `${c.water.toFixed(1)}°`;
+            const airStr   = `${c.air.toFixed(1)}°`;
+            // approximate widths for horizontal stacking
+            const waterW = waterStr.length * 4.6;
+            const airW   = airStr.length   * 4.6;
+            const gap = 4;
+            const yTop = outY - 3;
+            const yBot = outY + 6;
+
+            if (side === 1) {
+              // water | air, both left-anchored
+              labels += `<text class="temp-water" x="${tempX.toFixed(2)}" y="${yTop.toFixed(2)}" text-anchor="start">${waterStr}</text>`;
+              labels += `<text class="temp-air"   x="${(tempX + waterW + gap).toFixed(2)}" y="${yTop.toFixed(2)}" text-anchor="start">${airStr}</text>`;
+              labels += `<text class="town"       x="${tempX.toFixed(2)}" y="${yBot.toFixed(2)}" text-anchor="start">${c.name}</text>`;
+            } else {
+              // right-aligned: air | water reading right-to-left
+              labels += `<text class="temp-air"   x="${tempX.toFixed(2)}" y="${yTop.toFixed(2)}" text-anchor="end">${airStr}</text>`;
+              labels += `<text class="temp-water" x="${(tempX - airW - gap).toFixed(2)}" y="${yTop.toFixed(2)}" text-anchor="end">${waterStr}</text>`;
+              labels += `<text class="town"       x="${tempX.toFixed(2)}" y="${yBot.toFixed(2)}" text-anchor="end">${c.name}</text>`;
+            }
+          } else {
+            // Air-only cities: red temp + town name on a single line
+            const tempStr = `${c.air}°`;
+            const tempW = tempStr.length * 4.2;
+            const gap = 3;
+            const townX = side === 1 ? tempX + tempW + gap : tempX - tempW - gap;
+            labels += `<text class="temp-air" x="${tempX.toFixed(2)}" y="${(outY + 2.5).toFixed(2)}" text-anchor="${anchor}">${tempStr}</text>`;
+            labels += `<text class="town"     x="${townX.toFixed(2)}" y="${(outY + 2.5).toFixed(2)}" text-anchor="${anchor}">${c.name}</text>`;
+          }
+        }
+        gCities.innerHTML = dots;
+        gLabels.innerHTML = labels;
+      }
+
+      const startTime = performance.now();
+      const LON_PERIOD_MS = 16000;
+      const TILT = 18;
+      function tick(now) {
+        const t = (now - startTime) / LON_PERIOD_MS;
+        const lon = (t * 360) % 360;
+        const wobble = Math.sin((now - startTime) / 4200) * 4;
+        projection.rotate([ -lon, -TILT + wobble, 0 ]);
+        render();
+        requestAnimationFrame(tick);
+      }
+      render();
+      requestAnimationFrame(tick);
+    })();
+    </script>
 </body>
 </html>
+
