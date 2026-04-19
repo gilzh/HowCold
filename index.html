@@ -195,7 +195,7 @@
   <div class="container">
     <header>
       <h1><img src="loutre-portrait.png" alt="Loutre" style="width: 40px; height: 40px; vertical-align: middle; margin-right: 8px; border-radius: 50%;"> How Cold?</h1>
-      <p>Water and air temperatures, daily ☀️</p>
+      <p>Lachen water and air daily temperatures ☀️</p>
     </header>
 
     <div class="card">
@@ -507,13 +507,33 @@
       // Cities: Lachen has BOTH water + air; the rest are air-only.
       // Lachen water/air pulled live from the chart's last datapoint.
       const CITIES = [
-        { id:'lachen',      name:'Lachen',              lon:  8.85,  lat: 47.19,
-          water: lastWater.water, air: lastAir.air, highlight: true },
-        { id:'cape-may',    name:'Cape May',            lon:-74.92, lat: 38.93, air: 14 },
-        { id:'bois-plage',  name:'Le Bois-Plage-en-Ré', lon: -1.38, lat: 46.18, air: 13 },
-        { id:'saint-malo',  name:'Saint-Malo',          lon: -2.02, lat: 48.65, air: 12 },
-        { id:'sassari',     name:'Sassari',             lon:  8.56, lat: 40.73, air: 19 },
+        { id:'lachen',      name:'🇨🇭 Lachen',              lon:  8.85,  lat: 47.19, water: lastWater.water, air: lastAir.air, highlight: true },
+        { id:'cape-may',    name:'🇺🇸 Cape May',            lon:-74.92, lat: 38.93 },
+        { id:'bois-plage',  name:'🇫🇷 Le Bois-Plage-en-Ré', lon: -1.38, lat: 46.18 },
+        { id:'saint-malo',  name:'🇫🇷 Saint-Malo',          lon: -2.02, lat: 48.65 },
+        { id:'sassari',     name:'🇮🇹 Sassari',             lon:  8.56, lat: 40.73 },
+        { id:'monterey',    name:'🇺🇸 Monterey',            lon:-121.89, lat: 36.60 },
       ];
+
+// Fetch live air temps for non-Lachen cities from Open-Meteo
+async function fetchAirTemps(cities) {
+  const targets = cities.filter(c => !c.highlight);
+  if (!targets.length) return;
+  const lats = targets.map(c => c.lat).join(',');
+  const lons = targets.map(c => c.lon).join(',');
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('open-meteo ' + r.status);
+    const j = await r.json();
+    const entries = Array.isArray(j) ? j : [j];
+    entries.forEach((entry, i) => {
+      const t = entry?.current?.temperature_2m;
+      if (typeof t === 'number') targets[i].air = Math.round(t);
+    });
+  } catch (e) { console.warn('Air temp fetch failed:', e); }
+}
+fetchAirTemps(CITIES).then(() => render());
 
       const projection = d3.geoOrthographic()
         .scale(70).translate([100, 100]).clipAngle(90);
