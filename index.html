@@ -257,10 +257,8 @@
       sat.setDate(sat.getDate() + 7);
     }
 
-    // Merge and sort, removing Saturdays that coincide with a month tick
-    const allTickValues = [...monthTickValues,
-      ...saturdayTickValues.filter(v => !monthTickSet.has(v))
-    ].sort((a, b) => a - b);
+    // Use Saturday ticks only
+    const allTickValues = saturdayTickValues.slice().sort((a, b) => a - b);
 
     const gradient = ctx.createLinearGradient(0, 0, 0, 380);
     gradient.addColorStop(0, 'rgba(49, 130, 206, 0.25)');
@@ -351,13 +349,7 @@
               font: { size: 12, weight: '600' },
               color: '#a0aec0',
               maxRotation: 0,
-              callback: (value) => {
-                const d = new Date(value);
-                if (monthTickSet.has(value)) {
-                  return d.toLocaleDateString('en-GB', { month: 'short' });
-                }
-                return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-              },
+              callback: (value) => new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
             },
             border: { display: false },
           },
