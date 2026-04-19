@@ -113,13 +113,13 @@
   <div class="container">
     <header>
       <h1><img src="loutre-portrait.png" alt="Loutre" style="width: 40px; height: 40px; vertical-align: middle; margin-right: 8px; border-radius: 50%;"> How Cold?</h1>
-      <p>Lachen daily water and air temperatures ☀️</p>
+      <p>Water and air temperatures, daily ☀️</p>
     </header>
 
     <div class="card">
       <div class="stats">
         <div class="stat water">
-          <div class="stat-label" id="label-water">Water</div>
+          <div class="stat-label" id="label-water"></div>
           <div class="stat-value" id="stat-water-latest">—</div>
           <div class="stat-secondary" id="stat-water-avg">—</div>
         </div>
@@ -205,6 +205,7 @@
       ["2026-04-16T16:00", 12.0, 18.3],
       ["2026-04-17T07:00", 11.4, 8.4],
       ["2026-04-18T07:04", 12.3, 9.7],
+      ["2026-04-19T07:15", 13.1, 11.0],
     ];
 
     const dataPoints = RAW_DATA.map(([ts, water, air]) => ({ x: new Date(ts), water, air }));
@@ -225,10 +226,10 @@
       const timePart = (h % 12 || 12) + (h < 12 ? 'am' : 'pm');
       return `${datePart}, ${timePart}`;
     };
-    document.getElementById('label-water').textContent = `Water`;
+    document.getElementById('label-water').textContent = ` `;
     document.getElementById('stat-water-latest').innerHTML = `<span class="stat-hint">${fmtDate(lastWater.x)}</span>💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`;
     document.getElementById('stat-water-avg').innerHTML    = `<span class="stat-hint">last 5 days</span>🗓️ ${avg5d.toFixed(1)}<span>&deg;C</span>`;
-    document.getElementById('label-air').textContent = `Air`;
+    document.getElementById('label-air').textContent = ` `;
     document.getElementById('stat-air-latest').innerHTML = `<span class="stat-hint">${fmtDate(lastAir.x)}</span>💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`;
     document.getElementById('stat-air-avg').innerHTML    = `<span class="stat-hint">last 5 days</span>🗓️ ${avg5dAir.toFixed(1)}<span>&deg;C</span>`;
 
