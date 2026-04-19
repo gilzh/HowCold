@@ -236,7 +236,7 @@
     // Chart
     const ctx = document.getElementById('chart').getContext('2d');
 
-    // One tick per month, at the timestamp of the first data point in that month
+    // Month ticks: first data point of each month
     const monthTickValues = Object.values(
       dataPoints.reduce((acc, d) => {
         const key = `${d.x.getFullYear()}-${d.x.getMonth()}`;
@@ -244,6 +244,23 @@
         return acc;
       }, {})
     );
+    const monthTickSet = new Set(monthTickValues);
+
+    // Saturday ticks: every Saturday (day=6) at midnight within the data range
+    const saturdayTickValues = [];
+    const rangeStart = new Date(dataPoints[0].x);
+    const rangeEnd   = new Date(dataPoints[dataPoints.length - 1].x);
+    const sat = new Date(rangeStart); sat.setHours(0, 0, 0, 0);
+    while (sat.getDay() !== 6) sat.setDate(sat.getDate() + 1);
+    while (sat <= rangeEnd) {
+      saturdayTickValues.push(sat.getTime());
+      sat.setDate(sat.getDate() + 7);
+    }
+
+    // Merge and sort, removing Saturdays that coincide with a month tick
+    const allTickValues = [...monthTickValues,
+      ...saturdayTickValues.filter(v => !monthTickSet.has(v))
+    ].sort((a, b) => a - b);
 
     const gradient = ctx.createLinearGradient(0, 0, 0, 380);
     gradient.addColorStop(0, 'rgba(49, 130, 206, 0.25)');
@@ -327,14 +344,20 @@
               tooltipFormat: 'dd MMM HH:mm',
             },
             afterBuildTicks: (axis) => {
-              axis.ticks = monthTickValues.map(v => ({ value: v }));
+              axis.ticks = allTickValues.map(v => ({ value: v }));
             },
             grid: { display: false },
             ticks: {
               font: { size: 12, weight: '600' },
               color: '#a0aec0',
               maxRotation: 0,
-              callback: (value) => new Date(value).toLocaleDateString('en-GB', { month: 'short' }),
+              callback: (value) => {
+                const d = new Date(value);
+                if (monthTickSet.has(value)) {
+                  return d.toLocaleDateString('en-GB', { month: 'short' });
+                }
+                return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+              },
             },
             border: { display: false },
           },
