@@ -334,6 +334,7 @@
       ["2026-04-22T09:00", 12.2, 6.3],
       ["2026-04-23T09:00", 12.3, 7.9],
       ["2026-04-24T07:04", 13.0, 6.2],
+      ["2026-04-26T11:56", 15.4, 17.9],
     ];
 
     const dataPoints = RAW_DATA.map(([ts, water, air]) => ({ x: new Date(ts), water, air }));
@@ -519,7 +520,7 @@
         { id:'sassari',     name:'🇮🇹 Sassari',             lon:  8.56,  lat: 40.73 },
         { id:'moscow',      name:'🇮🇷 Moscow',              lon:  37.62, lat: 55.75 },
         { id:'cape-town',   name:'🇿🇦 Cape Town',           lon: 18.42,  lat: -33.95 },
-        { id:'sidney',     name:'🇦🇺 Sidney',               lon: 151.21, lat: -33.87 },
+        { id:'sydney',     name:'🇦🇺 Sydney',               lon: 151.21, lat: -33.87 },
       ];
 
 // Fetch live air temps for non-Lachen cities from Open-Meteo
