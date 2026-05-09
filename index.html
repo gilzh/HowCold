@@ -138,8 +138,8 @@
 
     .whirl { position: absolute; inset: 0; pointer-events: none; }
     .whirl svg { overflow: visible; }
-    .ring-dash { animation: spinCW 20s linear infinite; transform-origin: 50% 50%; }
-    .ring-arc  { animation: spinCCW 12s linear infinite, breathe 3.2s ease-in-out infinite; transform-origin: 50% 50%; }
+    .ring-dash { animation: spinCW 30s linear infinite; transform-origin: 50% 50%; }
+    .ring-arc  { animation: spinCCW 15s linear infinite, breathe 3.2s ease-in-out infinite; transform-origin: 50% 50%; }
     @keyframes spinCW  { to { transform: rotate(360deg); } }
     @keyframes spinCCW { to { transform: rotate(-360deg); } }
     @keyframes breathe { 0%,100% { opacity: 0.55; } 50% { opacity: 0.95; } }
@@ -164,7 +164,7 @@
       letter-spacing: 0.02em;
       fill: #2d3748;
       stroke: #fff;
-      stroke-width: 2px;
+      stroke-width: 3px;
     }
     #cityLabels line {
       stroke: #2d3748;
