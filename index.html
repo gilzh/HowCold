@@ -318,8 +318,8 @@
     }
     .globe-loader {
       position: relative;
-      width: 260px;
-      height: 260px;
+      width: 338px;
+      height: 338px;
       cursor: pointer;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -384,6 +384,167 @@
     }
     .globe-legend .sw-water { background: #3182ce; }
     .globe-legend .sw-air   { background: #e53e3e; }
+
+    /* ---------- Google Photos album gallery ---------- */
+    .album-card {
+      padding: 24px 24px 22px;
+    }
+    .album-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .album-head .album-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a0aec0;
+      margin-bottom: 2px;
+    }
+    .album-head .album-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a365d;
+    }
+    .album-head .album-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1f5b94;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ebf4fc 0%, #d6e8f7 100%);
+      box-shadow: 0 1px 2px rgba(49,130,206,0.10),
+                  inset 0 0 0 1px rgba(49,130,206,0.10);
+      text-decoration: none;
+      transition: transform 0.18s ease;
+      white-space: nowrap;
+    }
+    .album-head .album-cta:hover { transform: translateX(2px); }
+
+    .album-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .album-grid .album-tile {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ebf4fc 0%, #d6e8f7 100%);
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 0 1px rgba(49,130,206,0.10);
+    }
+    .album-grid .album-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px -2px rgba(49,130,206,0.25),
+                  inset 0 0 0 1px rgba(49,130,206,0.20);
+    }
+    .album-grid .album-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .album-grid .album-tile.placeholder {
+      font-size: 22px;
+      color: #1f5b94;
+      opacity: 0.55;
+    }
+    .album-grid .album-tile.more {
+      background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+    }
+    .album-grid .album-tile.more::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(26,54,93,0.45);
+      backdrop-filter: blur(1px);
+      pointer-events: none;
+    }
+    .album-grid .album-tile.more .more-label {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      line-height: 1.15;
+    }
+    .album-grid .album-tile.more .more-label small {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+    .album-empty {
+      grid-column: 1 / -1;
+      padding: 24px 0;
+      text-align: center;
+      color: #a0aec0;
+      font-size: 13px;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 32px;
+      cursor: zoom-out;
+      animation: lightboxFade 0.18s ease;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 24px 60px -12px rgba(0,0,0,0.6);
+    }
+    .lightbox .lightbox-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+    }
+    .lightbox .lightbox-close:hover { background: rgba(255,255,255,0.22); }
+    @keyframes lightboxFade { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (max-width: 540px) {
+      .album-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+      .album-card { padding: 18px 16px; }
+      .album-head .album-title { font-size: 15px; }
+    }
 
     /* ---------- Fun fact card ---------- */
     .fact-card h2 {
@@ -469,7 +630,6 @@
 
     <!-- NEW: globe card -->
     <div class="card globe-card">
-      <h2>Meanwhile, in a town<br>close to your heart ♥️</h2>
       <div class="globe-loader" role="img" aria-label="Spinning globe showing today's temperatures">
         <div class="whirl">
           <svg viewBox="0 0 200 200" aria-hidden="true">
@@ -514,6 +674,32 @@
       <div class="fact-hint">↑ Click a city name on the globe to swap the fact.</div>
     </div>
 
+    <!-- Google Photos album gallery. We scrape the shared album page via a
+         CORS proxy, extract the photo URLs (lh3.googleusercontent.com), and
+         render them as a thumbnail grid. Clicking opens a lightbox; the last
+         tile links out to Google Photos for the full experience. -->
+    <div class="card album-card">
+      <div class="album-head">
+        <div>
+          <div class="album-eyebrow">Google Photos</div>
+          <div class="album-title">Sunday Swim Album</div>
+        </div>
+        <a class="album-cta" href="https://photos.app.goo.gl/zzYAi3nvKMS2Rd489" target="_blank" rel="noopener">View album →</a>
+      </div>
+      <div class="album-grid" id="album-grid">
+        <div class="album-tile placeholder">📸</div>
+        <div class="album-tile placeholder">🏊</div>
+        <div class="album-tile placeholder">🦦</div>
+        <div class="album-tile placeholder">💦</div>
+      </div>
+    </div>
+
+    <!-- Lightbox for clicking on a gallery thumbnail -->
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+      <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close">×</button>
+      <img id="lightbox-img" alt="" />
+    </div>
+
         <footer>
       🏊‍♀️ Sunday Morning Swimmers &middot; <a href="https://chat.whatsapp.com/EnH72JSFwQuGByphmu8cTi?mode=gi_t" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Join our WhatsApp group</a>
     </footer>
@@ -550,7 +736,7 @@
       const datePart = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' });
       const h = d.getHours();
       const timePart = (h % 12 || 12) + (h < 12 ? 'am' : 'pm');
-      return `Lachen, ${datePart}, ${timePart}`;
+      return `${datePart}, ${timePart}`;
     };
     // Latest reading timestamp goes in the page title; the stat cards just show the values.
     document.getElementById('header-date').textContent = fmtDate(lastWater.x);
@@ -808,6 +994,110 @@
       }
     }
     loadForecast();
+
+
+    // ========== Google Photos album gallery ==========
+    // Fetches the public shared-album page via a CORS proxy, extracts every
+    // unique lh3.googleusercontent.com photo URL it can find, and renders a
+    // thumbnail grid. The album-grid degrades gracefully to its emoji
+    // placeholders if the scrape fails (Google can change the page format
+    // without warning). Clicking a thumbnail opens a lightbox.
+    (async () => {
+      const albumUrl = 'https://photos.app.goo.gl/zzYAi3nvKMS2Rd489';
+      // codetabs first — allorigins frequently 408s on this album page.
+      const proxies = [
+        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(albumUrl),
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent(albumUrl),
+      ];
+
+      let html = null;
+      for (const url of proxies) {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) continue;
+          const text = await r.text();
+          if (text.length < 5000) continue; // proxy may have returned a stub
+          html = text;
+          break;
+        } catch (e) { /* try next */ }
+      }
+      if (!html) return;
+
+      // Photo URLs look like:
+      //   https://lh3.googleusercontent.com/pw/<id>=w<W>-h<H>-...
+      // Avatars look like:
+      //   https://lh3.googleusercontent.com/a/<id>=s64-...
+      // We grab everything, drop avatars, strip the size suffix to get the
+      // canonical URL, then dedupe.
+      const raw = html.match(/https:\/\/lh3\.googleusercontent\.com\/[^\s"'<>\\]+/g) || [];
+      const photos = [...new Set(
+        raw
+          .filter(u => u.includes('/pw/'))           // only photos, not avatars
+          .map(u => u.replace(/=.*$/, ''))           // strip size/crop suffix
+      )];
+      if (photos.length === 0) return;
+
+      const MAX_TILES = 8;              // visible thumbnails in the grid
+      const THUMB     = '=w400-h400-c'; // square crop, 400px
+      const FULL      = '=w2000';        // full-size for the lightbox
+
+      const grid = document.getElementById('album-grid');
+      grid.innerHTML = '';
+
+      const shown = photos.slice(0, MAX_TILES);
+      const hidden = photos.length - shown.length;
+
+      shown.forEach((url, i) => {
+        const tile = document.createElement('div');
+        tile.className = 'album-tile';
+        // Last visible tile becomes a "+N more" overlay when there are extras.
+        const isMoreTile = (i === shown.length - 1) && hidden > 0;
+        const img = document.createElement('img');
+        img.src = url + THUMB;
+        img.loading = 'lazy';
+        img.alt = '';
+        img.referrerPolicy = 'no-referrer';
+        tile.appendChild(img);
+
+        if (isMoreTile) {
+          tile.classList.add('more');
+          const lbl = document.createElement('div');
+          lbl.className = 'more-label';
+          lbl.innerHTML = `+${hidden}<small>more</small>`;
+          tile.appendChild(lbl);
+          tile.addEventListener('click', () => {
+            window.open(albumUrl, '_blank', 'noopener');
+          });
+        } else {
+          tile.addEventListener('click', () => openLightbox(url + FULL));
+        }
+        grid.appendChild(tile);
+      });
+
+      // --- Lightbox ---
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      const lightboxClose = document.getElementById('lightbox-close');
+      function openLightbox(src) {
+        lightboxImg.src = src;
+        lightbox.classList.add('open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeLightbox() {
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        lightboxImg.src = '';
+        document.body.style.overflow = '';
+      }
+      lightbox.addEventListener('click', (e) => {
+        // Close on backdrop click; ignore clicks on the image itself.
+        if (e.target === lightbox || e.target === lightboxClose) closeLightbox();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+      });
+    })();
 
 
     // ========== Refresh button ==========
@@ -1069,9 +1359,17 @@ window.addEventListener('lachen-air-updated', (e) => {
         gGraticule.innerHTML = `<path d="${path(graticule) || ''}" />`;
 
         const cx = 100, cy = 100, R = 70;
+        // A point is on the visible hemisphere when its great-circle distance
+        // from the rotation center is ≤ 90°. clipAngle(90) clips path geometry,
+        // but `projection([lon,lat])` still returns coordinates for back-facing
+        // points — we'd see "ghost" labels for far-side cities. So filter them
+        // out explicitly here.
+        const rot = projection.rotate();
+        const center = [-rot[0], -rot[1]];
         let dots = '';
         const items = [];
         for (const c of CITIES) {
+          if (d3.geoDistance(center, [c.lon, c.lat]) > Math.PI / 2) continue;
           const p = projection([c.lon, c.lat]);
           if (!p) continue;
           const side = p[0] >= cx ? 1 : -1;
