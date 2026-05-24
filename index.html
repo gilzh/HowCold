@@ -122,6 +122,87 @@
       position: relative;
       height: 380px;
     }
+    /* ---------- 7-day forecast card ---------- */
+    .forecast-card h2 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a0aec0;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .forecast {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+    .forecast-day {
+      background: #f7fafc;
+      border-radius: 16px;
+      padding: 14px 6px 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: transform 0.18s ease;
+    }
+    .forecast-day:hover { transform: translateY(-1px); }
+    /* First day = today: tinted red bubble to match the air-temp accent */
+    .forecast-day.today {
+      background: linear-gradient(135deg, #fdecec 0%, #f9d2d2 100%);
+      box-shadow: 0 1px 2px rgba(229,62,62,0.10),
+                  0 6px 16px -6px rgba(229,62,62,0.22),
+                  inset 0 0 0 1px rgba(229,62,62,0.10);
+    }
+    .forecast-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #4a5568;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .forecast-day.today .forecast-name { color: #9b2c2c; }
+    .forecast-date {
+      font-size: 10px;
+      font-weight: 500;
+      color: #a0aec0;
+      margin-bottom: 2px;
+    }
+    .forecast-icon {
+      font-size: 26px;
+      margin: 4px 0 2px;
+      line-height: 1;
+    }
+    .forecast-max {
+      font-size: 16px;
+      font-weight: 700;
+      color: #e53e3e;
+      font-variant-numeric: tabular-nums;
+    }
+    .forecast-min {
+      font-size: 12px;
+      font-weight: 500;
+      color: #718096;
+      font-variant-numeric: tabular-nums;
+    }
+    .forecast-placeholder {
+      grid-column: 1 / -1;
+      padding: 32px 0;
+      text-align: center;
+      color: #a0aec0;
+      font-size: 12px;
+    }
+    @media (max-width: 480px) {
+      .forecast { gap: 4px; }
+      .forecast-day { padding: 10px 2px 8px; border-radius: 10px; }
+      .forecast-name { font-size: 9px; letter-spacing: 0.03em; }
+      .forecast-date { font-size: 8.5px; }
+      .forecast-icon { font-size: 20px; }
+      .forecast-max { font-size: 14px; }
+      .forecast-min { font-size: 10.5px; }
+    }
     footer {
       text-align: center;
       margin-top: 20px;
@@ -232,6 +313,14 @@
       </div>
       <div class="chart-wrapper">
         <canvas id="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- 7-day forecast card -->
+    <div class="card forecast-card">
+      <h2>7-day forecast — Lachen ⛰️</h2>
+      <div class="forecast" id="forecast">
+        <div class="forecast-placeholder">Loading forecast…</div>
       </div>
     </div>
 
@@ -457,6 +546,56 @@
         }
       }
     });
+
+
+    // ========== 7-day forecast (Lachen) ==========
+    // Pulls daily high/low + weather code from Open-Meteo. Free, no API key.
+    function weatherEmoji(code) {
+      // WMO weather interpretation codes, collapsed to a small icon set.
+      if (code === 0) return '☀️';                  // clear
+      if (code <= 3) return '⛅';                     // partly/mostly cloudy
+      if (code <= 48) return '🌫️';                 // fog
+      if (code <= 57) return '🌦️';                 // drizzle
+      if (code <= 67) return '🌧️';                 // rain
+      if (code <= 77) return '❄️';                  // snow
+      if (code <= 82) return '🌧️';                 // rain showers
+      if (code <= 86) return '❄️';                  // snow showers
+      return '⛈️';                                // thunderstorm
+    }
+
+    async function loadForecast() {
+      const url = 'https://api.open-meteo.com/v1/forecast'
+        + '?latitude=47.19&longitude=8.85'
+        + '&daily=temperature_2m_max,temperature_2m_min,weathercode'
+        + '&timezone=Europe/Zurich&forecast_days=7';
+      const el = document.getElementById('forecast');
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('forecast ' + r.status);
+        const j = await r.json();
+        const days = j.daily.time.map((dateStr, i) => ({
+          date: new Date(dateStr + 'T00:00'),
+          max: Math.round(j.daily.temperature_2m_max[i]),
+          min: Math.round(j.daily.temperature_2m_min[i]),
+          code: j.daily.weathercode[i],
+        }));
+        el.innerHTML = days.map((d, i) => {
+          const name = i === 0 ? 'Today' : d.date.toLocaleDateString('en-GB', { weekday: 'short' });
+          const date = d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+          return `<div class="forecast-day${i === 0 ? ' today' : ''}">
+              <div class="forecast-name">${name}</div>
+              <div class="forecast-date">${date}</div>
+              <div class="forecast-icon">${weatherEmoji(d.code)}</div>
+              <div class="forecast-max">${d.max}°</div>
+              <div class="forecast-min">${d.min}°</div>
+            </div>`;
+        }).join('');
+      } catch (e) {
+        console.warn('Forecast fetch failed:', e);
+        el.innerHTML = '<div class="forecast-placeholder">Forecast unavailable.</div>';
+      }
+    }
+    loadForecast();
 
 
     // ========== Globe loader ==========
