@@ -790,30 +790,38 @@ fetchAirTemps(CITIES).then(() => render());
       }
       const countries = topo ? topojson.feature(topo, topo.objects.countries) : null;
 
-      // Current local time for a city, formatted "HH:MM am/pm" (2-digit hour, lowercase).
+      // Current local time for a city, formatted "HH:MM" (24-hour, zero-padded).
       function fmtLocalTime(tz) {
         if (!tz) return '';
         try {
-          const s = new Date().toLocaleTimeString('en-US', {
-            hour: '2-digit', minute: '2-digit', hour12: true, timeZone: tz,
+          return new Date().toLocaleTimeString('en-GB', {
+            hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz,
           });
-          // toLocaleTimeString returns e.g. "03:42 PM" → lowercase
-          return s.toLowerCase();
         } catch { return ''; }
       }
 
-      // Render a city name + local time as foreignObject so flag emoji render on iOS/Safari.
-      // Name and time sit on a single line (time is muted) so adjacent labels don't overlap.
-      function townLabel(x, y, name, time, side, cityId) {
-        const w = 175, h = 14;
+      // Render the full label (air temp + city name + local time) as a single
+      // foreignObject so all three sit on one shared text baseline. The temp is
+      // placed closest to the globe (left of name on the right side, right of
+      // name on the left side).
+      function townLabel(x, y, airText, name, time, side, cityId) {
+        const w = 200, h = 14;
         const fx = side === 1 ? x : x - w;
-        const align = side === 1 ? 'left' : 'right';
+        const justify = side === 1 ? 'flex-start' : 'flex-end';
         const wrapStyle = [
           'font-family:Segoe UI,-apple-system,BlinkMacSystemFont,sans-serif',
-          `text-align:${align}`,
+          'display:flex',
+          'align-items:baseline',
+          `justify-content:${justify}`,
+          'height:100%',
           'letter-spacing:0.02em','line-height:1',
           'white-space:nowrap',
           'cursor:pointer',
+        ].join(';');
+        const tempStyle = [
+          'font-size:9px','font-weight:700','color:#e53e3e',
+          'text-shadow:0 0 2.5px #fff,0 0 2.5px #fff,0 0 2.5px #fff',
+          'font-variant-numeric:tabular-nums',
         ].join(';');
         const nameStyle = [
           'font-size:8.5px','font-weight:700','color:#2d3748',
@@ -821,12 +829,17 @@ fetchAirTemps(CITIES).then(() => render());
         ].join(';');
         const timeStyle = [
           'font-size:7px','font-weight:500','color:#a0aec0',
-          'margin-left:5px',
           'text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 2px #fff',
           'font-variant-numeric:tabular-nums',
         ].join(';');
-        const timeMarkup = time ? `<span style="${timeStyle}">${time}</span>` : '';
-        return `<foreignObject class="city-hit" data-city-id="${cityId}" x="${fx.toFixed(2)}" y="${(y - 5).toFixed(2)}" width="${w}" height="${h}"><div xmlns="http://www.w3.org/1999/xhtml" style="${wrapStyle}" data-city-id="${cityId}"><span class="city-name" style="${nameStyle}">${name}</span>${timeMarkup}</div></foreignObject>`;
+        const tempMarkup = airText ? `<span style="${tempStyle}">${airText}</span>` : '';
+        const nameMarkup = `<span class="city-name" style="${nameStyle};margin-left:${airText && side === 1 ? 4 : 0}px">${name}</span>`;
+        const timeMarkup = time ? `<span style="${timeStyle};margin-left:5px">${time}</span>` : '';
+        // Temp sits closest to the globe: right side → temp first; left side → temp last.
+        const inner = side === 1
+          ? `${tempMarkup}${nameMarkup}${timeMarkup}`
+          : `${nameMarkup}${timeMarkup}${airText ? `<span style="${tempStyle};margin-left:4px">${airText}</span>` : ''}`;
+        return `<foreignObject class="city-hit" data-city-id="${cityId}" x="${fx.toFixed(2)}" y="${(y - 5).toFixed(2)}" width="${w}" height="${h}"><div xmlns="http://www.w3.org/1999/xhtml" style="${wrapStyle}" data-city-id="${cityId}">${inner}</div></foreignObject>`;
       }
 
       function render() {
@@ -877,15 +890,7 @@ fetchAirTemps(CITIES).then(() => render());
           // Lachen's air is a decimal (chart reading); others are rounded ints.
           const hasTemp  = typeof c.air === 'number';
           const airText  = hasTemp ? (c.highlight ? c.air.toFixed(1) : c.air) + '°' : '';
-          const tempW    = airText.length * 4.2;
-          const gap      = 3;
-          const townX    = hasTemp
-            ? (side === 1 ? tempX + tempW + gap : tempX - tempW - gap)
-            : tempX;
-          if (hasTemp) {
-            labels += `<text class="temp-air" x="${tempX.toFixed(2)}" y="${(outY + 2.5).toFixed(2)}" text-anchor="${anchor}">${airText}</text>`;
-          }
-          labels += townLabel(townX, outY, c.name, fmtLocalTime(c.tz), side, c.id);
+          labels += townLabel(tempX, outY, airText, c.name, fmtLocalTime(c.tz), side, c.id);
         }
         gCities.innerHTML = dots;
         gLabels.innerHTML = labels;
@@ -905,15 +910,23 @@ fetchAirTemps(CITIES).then(() => render());
       });
 
       // City labels are clickable: swap the fun fact below the globe.
-      // Stop propagation so the click doesn't also pause/resume the globe.
-      gLabels.addEventListener('click', (e) => {
+      // We listen to `pointerdown` (not `click`) because the globe re-renders
+      // every frame while spinning — by the time the browser would fire a
+      // synthetic click, the original target node has been replaced and the
+      // click is suppressed. pointerdown fires on the live target immediately.
+      gLabels.addEventListener('pointerdown', (e) => {
         const hit = e.target.closest('[data-city-id]');
         if (!hit) return;
         e.stopPropagation();
         showFact(hit.getAttribute('data-city-id'));
       });
+      // Also swallow the subsequent `click` so it doesn't bubble up to the
+      // globe-loader pause toggle (when the click does manage to fire).
+      gLabels.addEventListener('click', (e) => {
+        if (e.target.closest('[data-city-id]')) e.stopPropagation();
+      });
 
-      const LON_PERIOD_MS = 16000;
+      const LON_PERIOD_MS = 32000;
       const TILT = 18;
       function tick(now) {
         if (running) {
