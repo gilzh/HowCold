@@ -555,7 +555,12 @@
               tooltipFormat: 'dd MMM HH:mm',
             },
             afterBuildTicks: (axis) => {
-              axis.ticks = allTickValues.map(v => ({ value: v }));
+              // Only show Saturday ticks that fall inside the current visible range,
+              // so the y-axis sits flush against the left of the plot area.
+              const min = axis.min, max = axis.max;
+              axis.ticks = allTickValues
+                .filter(v => v >= min && v <= max)
+                .map(v => ({ value: v }));
             },
             grid: { display: false },
             ticks: {
