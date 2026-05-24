@@ -55,63 +55,68 @@
     }
     .stats {
       display: flex;
-      gap: 24px;
+      gap: 18px;
       margin-bottom: 28px;
     }
+    /* Pill-shaped "bubble" stat: tinted fill in the brand color, a soft
+       colored glow for depth, and the temperature in the same hue. */
     .stat {
       flex: 1;
-      padding: 16px 20px;
-      background: #f7fafc;
-      border-radius: 8px;
-      border-left: 4px solid;
+      padding: 22px 28px;
+      border-radius: 999px;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .stat.water { border-color: #3182ce; }
-    .stat.air   { border-color: #e53e3e; }
-    .stat-label {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #a0aec0;
-      margin-bottom: 4px;
+    .stat.water {
+      background: linear-gradient(135deg, #ebf4fc 0%, #d6e8f7 100%);
+      box-shadow: 0 1px 2px rgba(49,130,206,0.12),
+                  0 8px 24px -6px rgba(49,130,206,0.28),
+                  inset 0 0 0 1px rgba(49,130,206,0.10);
+      color: #1f5b94;
+    }
+    .stat.air {
+      background: linear-gradient(135deg, #fdecec 0%, #f9d2d2 100%);
+      box-shadow: 0 1px 2px rgba(229,62,62,0.12),
+                  0 8px 24px -6px rgba(229,62,62,0.25),
+                  inset 0 0 0 1px rgba(229,62,62,0.10);
+      color: #9b2c2c;
+    }
+    .stat:hover {
+      transform: translateY(-1px);
+    }
+    .stat.water:hover {
+      box-shadow: 0 1px 2px rgba(49,130,206,0.14),
+                  0 12px 28px -6px rgba(49,130,206,0.34),
+                  inset 0 0 0 1px rgba(49,130,206,0.14);
+    }
+    .stat.air:hover {
+      box-shadow: 0 1px 2px rgba(229,62,62,0.14),
+                  0 12px 28px -6px rgba(229,62,62,0.30),
+                  inset 0 0 0 1px rgba(229,62,62,0.14);
     }
     .stat-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: #2d3748;
+      font-size: 30px;
+      font-weight: 800;
+      color: inherit;
+      letter-spacing: -0.02em;
+      line-height: 1;
     }
     .stat-value span {
-      font-size: 16px;
-      font-weight: 400;
-      color: #a0aec0;
-    }
-    .stat-secondary {
-      font-size: 16px;
-      font-weight: 600;
-      color: #a0aec0;
-      margin-top: 2px;
-    }
-    .stat-hint {
-      font-size: 10px;
-      font-weight: 400;
-      color: #cbd5e0;
-      white-space: nowrap;
-      float: right;
-      line-height: inherit;
-    }
-    .stat-secondary span {
-      font-size: 13px;
-      font-weight: 400;
+      font-size: 15px;
+      font-weight: 500;
+      opacity: 0.55;
+      margin-left: 2px;
+      letter-spacing: 0;
     }
     @media (max-width: 480px) {
       .stats { gap: 10px; margin-bottom: 20px; }
-      .stat { padding: 10px 12px; }
-      .stat-label { font-size: 9px; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .stat-value { font-size: 20px; }
+      .stat { padding: 14px 18px; gap: 3px; }
+      .stat-value { font-size: 22px; }
       .stat-value span { font-size: 12px; }
-      .stat-secondary { font-size: 13px; margin-top: 1px; white-space: nowrap; }
-      .stat-secondary span { font-size: 11px; }
-      .stat-hint { font-size: 9px; margin-left: 3px; white-space: nowrap; }
     }
     .chart-wrapper {
       position: relative;
@@ -211,11 +216,9 @@
     <div class="card">
       <div class="stats">
         <div class="stat water">
-          <div class="stat-label" id="label-water"></div>
           <div class="stat-value" id="stat-water-latest">—</div>
         </div>
         <div class="stat air">
-          <div class="stat-label" id="label-air">Air</div>
           <div class="stat-value" id="stat-air-latest">—</div>
         </div>
       </div>
@@ -305,10 +308,8 @@
     };
     // Latest reading timestamp goes in the page title; the stat cards just show the values.
     document.getElementById('header-date').textContent = fmtDate(lastWater.x);
-    document.getElementById('label-water').textContent = ` `;
     document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`;
-    document.getElementById('label-air').textContent = ` `;
-    document.getElementById('stat-air-latest').innerHTML = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-air-latest').innerHTML   = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`;
 
     // Chart
     const ctx = document.getElementById('chart').getContext('2d');
