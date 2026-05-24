@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(curl *)",
+      "Bash(git *)",
+      "Bash(node *)",
+      "Bash(echo *)",
+      "Bash(python3 *)",
+      "Bash(date *)",
+      "Bash(grep *)",
+      "Bash(cat *)",
+      "Bash(tail *)",
+      "Bash(head *)",
+      "Bash(sed *)",
+      "Bash(awk *)",
+      "Bash(jq *)",
+      "Bash(ls *)",
+      "Bash(cd *)",
+      "Read",
+      "Edit",
+      "Write"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/gilles/Coding/HowCold/.claude/notify-on-push.py",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}

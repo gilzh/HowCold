@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliGilles Food Planner – Menu</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+            color: white;
+            padding: 16px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 { font-size: 1.5em; font-weight: 700; }
+
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+
+        .back-btn, .clear-btn {
+            color: white;
+            text-decoration: none;
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover, .clear-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .clear-btn { border-color: rgba(255,100,100,0.6); color: #ffd0d0; }
+
+        .content { padding: 30px; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+        }
+
+        .empty-state p { font-size: 1.1em; margin-bottom: 10px; }
+
+        .recipe-list { list-style: none; }
+
+        .recipe-item {
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #a855f7;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s;
+        }
+
+        .recipe-item:hover { background: #fdf4ff; }
+
+        .recipe-number {
+            font-weight: 700;
+            color: #a855f7;
+            font-size: 1.1em;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .recipe-content { flex: 1; }
+
+        .recipe-name {
+            color: #a855f7;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        .recipe-name:hover { text-decoration: underline; color: #9333ea; }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            opacity: 0.4;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+        }
+
+        .remove-btn:hover { opacity: 1; background: #fee2e2; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📋 This Week's Menu</h1>
+        <div class="header-actions">
+            {% if recipes %}
+            <button class="clear-btn" id="clear-all-btn">🗑 Clear all</button>
+            {% endif %}
+            <a href="/" class="back-btn">← Back to search</a>
+        </div>
+    </div>
+
+    <div class="content">
+        {% if recipes %}
+        <ol class="recipe-list" id="recipe-list">
+            {% for r in recipes %}
+            <li class="recipe-item" data-id="{{ r.id }}" id="item-{{ r.id }}">
+                <div class="recipe-number">{{ loop.index }}</div>
+                <div class="recipe-content">
+                    <a href="{{ r.url }}" target="_blank" class="recipe-name">
+                        {{ r.diet_icon }} {{ r.name }} {{ r.source_icon }}
+                    </a>
+                </div>
+                <button class="remove-btn" data-id="{{ r.id }}" title="Remove from menu">✕</button>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <div class="empty-state">
+            <p>Your menu is empty.</p>
+            <p>Search for recipes and click 📍 to add them here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', () => removeRecipe(btn.dataset.id));
+});
+
+document.getElementById('clear-all-btn')?.addEventListener('click', async () => {
+    const items = document.querySelectorAll('.recipe-item');
+    for (const item of items) {
+        await fetch('/api/menu/toggle', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: item.dataset.id})
+        });
+        item.remove();
+    }
+    document.getElementById('recipe-list')?.remove();
+    document.querySelector('.content').innerHTML = '<div class="empty-state"><p>Your menu is empty.</p><p>Search for recipes and click 📍 to add them here.</p></div>';
+});
+
+async function removeRecipe(id) {
+    await fetch('/api/menu/toggle', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({id})
+    });
+    const item = document.getElementById('item-' + id);
+    if (item) item.remove();
+    // Renumber
+    document.querySelectorAll('.recipe-number').forEach((el, i) => el.textContent = i + 1);
+    if (!document.querySelector('.recipe-item')) {
+        document.getElementById('recipe-list')?.remove();
+        document.querySelector('.content').innerHTML = '<div class="empty-state"><p>Your menu is empty.</p><p>Search for recipes and click 📍 to add them here.</p></div>';
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "HowCold",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5051"],
+      "port": 5051,
+      "cwd": "/Users/gilles/Coding/HowCold"
+    }
+  ]
+}

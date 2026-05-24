@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliGilles' Awesome Numnums Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(160deg, #f0f2f5 0%, #e4e8ef 50%, #d8dfe8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 18px;
+            box-shadow: 0 8px 40px rgba(0, 78, 140, 0.10), 0 1px 0 rgba(255,255,255,0.6) inset;
+            overflow: hidden;
+            border: 1px solid rgba(0, 120, 212, 0.12);
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+            color: white;
+            padding: 11px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.15em;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            opacity: 0.97;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.40);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .header-logo:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+        }
+
+        /* ── Logo preview tooltip ── */
+        .logo-preview {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+            border: 3px solid rgba(255,255,255,0.85);
+            pointer-events: none;
+        }
+
+        .logo-preview img {
+            display: block;
+            width: 280px;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        /* ── Two-column page layout ── */
+        .page-layout {
+            display: flex;
+            align-items: stretch;
+            min-height: 200px;
+        }
+
+        .main-column {
+            flex: 1;
+            min-width: 0;
+            padding: 20px 24px;
+        }
+
+        /* ── Shopping panel ── */
+        .shopping-panel {
+            width: 255px;
+            flex-shrink: 0;
+            background: rgba(239, 246, 252, 0.80);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-left: 1px solid rgba(0, 120, 212, 0.15);
+            padding: 16px 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .shopping-panel h3 {
+            font-size: 0.78em;
+            font-weight: 600;
+            color: #005a9e;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 120, 212, 0.18);
+            flex-shrink: 0;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+        }
+
+        .shopping-placeholder {
+            color: #8a9aaa;
+            font-size: 0.82em;
+            font-style: italic;
+            line-height: 1.5;
+            margin-top: 4px;
+        }
+
+        .shopping-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            overflow-y: auto;
+        }
+
+        .shopping-list li {
+            font-size: 0.81em;
+            color: #323130;
+            line-height: 1.4;
+            display: flex;
+            gap: 5px;
+            padding: 2px 0;
+        }
+
+        .shopping-list li .si-emoji {
+            flex-shrink: 0;
+            width: 1.4em;
+            text-align: center;
+        }
+
+        /* ── Filter bar ── */
+        .form-section {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 12px;
+            margin: -20px -24px 20px -24px;
+            padding: 14px 24px;
+            border-bottom: 1px solid rgba(0, 120, 212, 0.08);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1.2fr;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group > label {
+            font-size: 0.78em;
+            color: #605e5c;
+            margin-bottom: 4px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        label[for="search"] {
+            font-size: 1em;
+            font-weight: 600;
+            color: #323130;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 7px 11px;
+            border: 1px solid rgba(0, 0, 0, 0.14);
+            border-radius: 8px;
+            font-size: 0.88em;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            height: 34px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.85);
+            color: #323130;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0078d4;
+            box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.14);
+            background: white;
+        }
+
+        .form-group input::placeholder {
+            color: #a8b3bf;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.86em;
+            color: #323130;
+            cursor: pointer;
+        }
+
+        .radio-label input[type="radio"] {
+            accent-color: #0078d4;
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+            margin-top: 9px;
+        }
+
+        .menu-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+            color: white;
+            text-decoration: none;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 78, 140, 0.25);
+            transition: all 0.2s ease;
+            letter-spacing: 0.2px;
+        }
+
+        .menu-btn:hover {
+            background: linear-gradient(135deg, #106ebe 0%, #0078d4 100%);
+            box-shadow: 0 4px 14px rgba(0, 78, 140, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .clear-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.05);
+            color: #605e5c;
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+            border: 1px solid rgba(0,0,0,0.10);
+            transition: all 0.2s ease;
+        }
+
+        .clear-btn:hover {
+            background: rgba(0, 0, 0, 0.09);
+            color: #323130;
+        }
+
+        .qotd {
+            margin-top: 10px;
+            font-size: 0.78em;
+            color: #8a9aaa;
+            font-style: italic;
+            line-height: 1.45;
+            max-width: 420px;
+        }
+
+        .qotd cite {
+            display: block;
+            font-style: normal;
+            font-weight: 500;
+            color: #a8b3bf;
+            margin-top: 2px;
+            font-size: 0.92em;
+        }
+
+        /* ── Results ── */
+        .results-section {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0,0,0,0.07);
+        }
+
+        .results-section h2 {
+            font-size: 1em;
+            color: #323130;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .message {
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 0.88em;
+        }
+
+        .message.error {
+            background: rgba(220, 50, 50, 0.08);
+            color: #a33;
+            border-left: 3px solid #c44;
+        }
+
+        .message.info {
+            background: rgba(0, 120, 212, 0.07);
+            color: #005a9e;
+            border-left: 3px solid #0078d4;
+        }
+
+        .recipe-list {
+            list-style: none;
+        }
+
+        .recipe-item {
+            padding: 9px 13px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.75);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-left: 3px solid rgba(0, 120, 212, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .recipe-item:hover {
+            background: rgba(255, 255, 255, 0.98);
+            border-left-color: #0078d4;
+            box-shadow: 0 2px 10px rgba(0, 78, 140, 0.09);
+            transform: translateX(3px);
+        }
+
+        .recipe-name {
+            display: inline-block;
+            color: #0078d4;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.93em;
+            transition: color 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .recipe-name:hover {
+            color: #005a9e;
+            text-decoration: underline;
+            text-decoration-color: rgba(0, 120, 212, 0.4);
+        }
+
+        .recipe-item.in-menu {
+            border-left-color: #0078d4;
+            background: rgba(239, 246, 252, 0.80);
+        }
+
+        .recipe-attrs {
+            color: #8a9aaa;
+            font-size: 0.78em;
+            margin-top: 2px;
+        }
+
+        .recipe-attrs small {
+            display: inline-block;
+            background: rgba(0, 120, 212, 0.08);
+            color: #005a9e;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-right: 3px;
+            margin-top: 2px;
+        }
+
+        .recipe-rating {
+            background: rgba(184, 134, 11, 0.10) !important;
+            color: #b8860b !important;
+        }
+
+.empty-state {
+            text-align: center;
+            padding: 36px 20px;
+            color: #8a9aaa;
+        }
+
+        .empty-state p {
+            font-size: 0.95em;
+            margin-bottom: 8px;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.07);
+        }
+
+        .page-btn {
+            background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+            color: white;
+            text-decoration: none;
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 0.83em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 4px rgba(0, 78, 140, 0.20);
+        }
+
+        .page-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0, 78, 140, 0.28);
+        }
+
+        .page-btn.disabled {
+            background: rgba(0, 0, 0, 0.08);
+            color: #aaa;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .page-btn.disabled:hover {
+            transform: none;
+        }
+
+        .page-info {
+            color: #605e5c;
+            font-size: 0.88em;
+        }
+
+        .recipe-diet-icon {
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+
+        .recipe-source-icon {
+            margin-left: 5px;
+            flex-shrink: 0;
+            opacity: 0.75;
+        }
+
+        /* ── Recipe title row ── */
+        .recipe-title-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .schedule-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 1px 3px;
+            border-radius: 4px;
+            opacity: 0.45;
+            transition: opacity 0.15s ease;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .schedule-btn:hover { opacity: 1; }
+        .schedule-btn.scheduled { opacity: 1; }
+
+        /* ── Schedule popover ── */
+        .schedule-popover {
+            display: none;
+            position: fixed;
+            z-index: 1100;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 120, 212, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 78, 140, 0.15);
+            padding: 14px 16px;
+            min-width: 220px;
+            font-size: 0.86em;
+        }
+
+        .schedule-popover h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.88em;
+            color: #005a9e;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .schedule-popover label {
+            display: block;
+            font-size: 0.8em;
+            color: #605e5c;
+            margin-bottom: 3px;
+            margin-top: 8px;
+        }
+
+        .schedule-popover input[type="date"],
+        .schedule-popover select {
+            width: 100%;
+            padding: 5px 8px;
+            border: 1px solid rgba(0,0,0,0.14);
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-family: inherit;
+            background: rgba(255,255,255,0.9);
+            color: #323130;
+        }
+
+        .schedule-popover .pop-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .schedule-popover .pop-confirm {
+            flex: 1;
+            padding: 6px 10px;
+            background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .schedule-popover .pop-confirm:hover { opacity: 0.88; }
+        .schedule-popover .pop-confirm:disabled { opacity: 0.5; cursor: default; }
+
+        .schedule-popover .pop-cancel {
+            padding: 6px 10px;
+            background: rgba(0,0,0,0.06);
+            color: #605e5c;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 16px;
+            font-size: 0.85em;
+            cursor: pointer;
+        }
+
+        .schedule-popover .pop-status {
+            margin-top: 8px;
+            font-size: 0.82em;
+            text-align: center;
+            min-height: 1em;
+        }
+
+        .schedule-popover .pop-status.ok { color: #107c10; }
+        .schedule-popover .pop-status.err { color: #a33; }
+
+        /* ── Ingredient tooltip ── */
+        .ingredient-tooltip {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 120, 212, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 78, 140, 0.14);
+            padding: 12px 14px;
+            max-width: 300px;
+            min-width: 190px;
+            font-size: 0.86em;
+            pointer-events: none;
+        }
+
+        .ingredient-tooltip h4 {
+            margin: 0 0 7px 0;
+            font-size: 0.88em;
+            color: #005a9e;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0, 120, 212, 0.10);
+            padding-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .ingredient-tooltip ul {
+            margin: 0;
+            padding: 0 0 0 14px;
+            color: #323130;
+            line-height: 1.7;
+        }
+
+        .ingredient-tooltip .tip-loading {
+            color: #8a9aaa;
+            font-style: italic;
+        }
+
+        @media (max-width: 900px) {
+            .page-layout { flex-direction: column; }
+            .shopping-panel { width: 100%; border-left: none; border-top: 1px solid rgba(0, 120, 212, 0.15); }
+            /* Search spans full width; Diet + Source sit side by side */
+            .form-grid { grid-template-columns: 1fr 1fr; }
+            .form-grid .form-group:first-child { grid-column: 1 / -1; }
+            .main-column { padding: 16px; }
+            .form-section { margin: -16px -16px 16px -16px; border-radius: 0; }
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 6px; }
+            .container { border-radius: 10px; }
+            .header { padding: 10px 14px; }
+            .header h1 { font-size: 0.88em; gap: 8px; flex-wrap: wrap; }
+            .main-column { padding: 12px; }
+            .form-section { margin: -12px -12px 14px -12px; }
+            /* Larger touch targets */
+            .radio-label { min-height: 34px; }
+            .menu-btn, .clear-btn { padding: 9px 16px; }
+            .qotd { max-width: none; }
+            /* No slide-in on touch – it's jarring */
+            .recipe-item:hover { transform: none; }
+            /* Popover: center it regardless of JS-computed left */
+            .schedule-popover {
+                left: 50% !important;
+                transform: translateX(-50%);
+                min-width: 280px;
+                max-width: calc(100vw - 24px);
+            }
+            .page-btn { padding: 8px 18px; }
+        }
+
+        /* Disable hover-only features on touch devices */
+        @media (hover: none) {
+            .logo-preview { display: none !important; }
+            .header-logo { cursor: default; }
+            .ingredient-tooltip { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1><img src="/static/logo_circle.png" class="header-logo" id="header-logo" alt="AliGilles"> AliGilles' Awesome Numnums Planner</h1>
+    </div>
+
+    <!-- Logo full-photo preview -->
+    <div class="logo-preview" id="logo-preview">
+        <img src="/static/logo.jpg" alt="Full photo">
+    </div>
+
+    <div class="page-layout">
+        <div class="main-column">
+            <div class="form-section">
+                <form method="get" action="/">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="search">What should we cook today?</label>
+                            <input type="text" id="search" name="search" placeholder="e.g., chicken pasta avocado...">
+                            <div class="button-group">
+                                <a href="/?suggest=1" class="menu-btn" id="menu-btn">📋 Menu</a>
+                                <a href="/" class="clear-btn">✕ Clear</a>
+                            </div>
+                            <div class="qotd" id="qotd"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Diet</label>
+                            <div class="radio-group">
+                                <label class="radio-label"><input type="radio" name="diet" value=""> Any</label>
+                                <label class="radio-label"><input type="radio" name="diet" value="vegetarian"> 🥦 Vegetarian</label>
+                                <label class="radio-label"><input type="radio" name="diet" value="fish"> 🐟 Fish</label>
+                                <label class="radio-label"><input type="radio" name="diet" value="white_meat"> 🍗 White Meat</label>
+                                <label class="radio-label"><input type="radio" name="diet" value="red_meat"> 🥩 Red Meat</label>
+                                <label class="radio-label"><input type="radio" name="diet" value="dessert"> 🍰 Dessert</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Source</label>
+                            <div class="radio-group">
+                                <label class="radio-label"><input type="radio" name="source" value=""> Any</label>
+                                <label class="radio-label"><input type="radio" name="source" value="bbcgoodfood"> <img src="https://www.bbcgoodfood.com/favicon.ico" width="14" height="14" style="vertical-align:middle"> BBC Good Food</label>
+                                <label class="radio-label"><input type="radio" name="source" value="plantoeat"> <img src="/static/icons/icon_PlanToEat.png" width="14" height="14" style="vertical-align:middle"> Plan to Eat</label>
+                                <label class="radio-label"><input type="radio" name="source" value="eatyourbooks"> <img src="/static/icons/icon_EatYourBooks.png" width="14" height="14" style="vertical-align:middle"> Eat Your Books</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if message %}
+            <div class="results-section">
+                <div class="message error">{{ message }}</div>
+            </div>
+            {% endif %}
+
+            {% if results is not none %}
+            <div class="results-section">
+                <h2>{% if suggest %}📋 This week's menu{% else %}{{ total }} recipe{{ 's' if total != 1 else '' }} found{% endif %}</h2>
+                {% if results %}
+                <ol class="recipe-list">
+                    {% for r in results %}
+                    <li class="recipe-item {% if r.in_menu %}in-menu{% endif %}"
+                        data-recipe-id="{{ r.id }}"
+                        data-recipe-url="{{ r.url }}"
+                        data-recipe-source="{{ r.source or 'bbcgoodfood' }}">
+                        <div class="recipe-content">
+                            <div class="recipe-title-row">
+                                <span class="recipe-diet-icon">{{ r.diet_icon }}</span><a href="{{ r.url }}" target="_blank" class="recipe-name">{{ r.name }}</a><span class="recipe-source-icon">{{ r.source_icon|safe }}</span>
+                                {% if (r.source or 'bbcgoodfood') == 'plantoeat' %}
+                                <button class="schedule-btn" data-rid="{{ r.id }}" title="Schedule in Plan to Eat">📅</button>
+                                {% else %}
+                                <button class="schedule-btn" data-name="{{ r.name }}" data-url="{{ r.url }}" title="Schedule in Plan to Eat">📅</button>
+                                {% endif %}
+                            </div>
+                            {% if r.attributes or r.rating_value %}
+                            <div class="recipe-attrs">
+                                {% for attr in r.attributes %}
+                                <small>{{ attr }}</small>
+                                {% endfor %}
+                                {% if r.rating_value %}
+                                <small class="recipe-rating" title="{{ r.rating }}">&#9733; {{ '%.1f'|format(r.rating_value) }}</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ol>
+                {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% if page > 1 %}
+                    <a href="{{ page_base }}page={{ page - 1 }}" class="page-btn">&laquo; Prev</a>
+                    {% else %}
+                    <span class="page-btn disabled">&laquo; Prev</span>
+                    {% endif %}
+                    <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+                    {% if page < total_pages %}
+                    <a href="{{ page_base }}page={{ page + 1 }}" class="page-btn">Next &raquo;</a>
+                    {% else %}
+                    <span class="page-btn disabled">Next &raquo;</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="empty-state">
+                    <p>No recipes found matching your filters.</p>
+                    <p>Try adjusting your criteria and try again.</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Shopping list panel – always visible -->
+        <div class="shopping-panel">
+            <h3>🛒 Shopping list</h3>
+            {% if shopping_list %}
+            <ul class="shopping-list">
+                {% for name, emoji in shopping_list %}
+                <li><span class="si-emoji">{{ emoji }}</span><span>{{ name }}</span></li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="shopping-placeholder">Press 📋 Menu to generate your weekly shopping list.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="schedule-popover" id="schedule-popover">
+    <h4><img src="/static/icons/icon_PlanToEat.png" width="13" height="13" style="vertical-align:middle;margin-right:4px">Schedule in Plan to Eat</h4>
+    <label>Date</label>
+    <input type="date" id="pop-date">
+    <label>Meal</label>
+    <select id="pop-section">
+        <option value="breakfast">Breakfast</option>
+        <option value="lunch">Lunch</option>
+        <option value="dinner" selected>Dinner</option>
+    </select>
+    <div class="pop-actions">
+        <button class="pop-confirm" id="pop-confirm">Schedule</button>
+        <button class="pop-cancel" id="pop-cancel">Cancel</button>
+    </div>
+    <div class="pop-status" id="pop-status"></div>
+</div>
+
+<div class="ingredient-tooltip" id="ing-tooltip">
+    <h4>Ingredients</h4>
+    <div id="ing-tooltip-body"><span class="tip-loading">Loading…</span></div>
+</div>
+
+<script>
+// ── Quote of the Day ──
+(function() {
+    const quotes = [
+        ["One cannot think well, love well, sleep well, if one has not dined well.", "Virginia Woolf"],
+        ["Cooking is like love. It should be entered into with abandon or not at all.", "Harriet Van Horne"],
+        ["Tell me what you eat and I will tell you what you are.", "Jean Anthelme Brillat-Savarin"],
+        ["The secret ingredient is always love. But it's mostly butter.", "Anonymous"],
+        ["People who love to eat are always the best people.", "Julia Child"],
+        ["First we eat, then we do everything else.", "M.F.K. Fisher"],
+        ["Food is not just eating energy. It's an experience.", "Guy Fieri"],
+        ["The discovery of a new dish does more for the happiness of the human race than the discovery of a star.", "Brillat-Savarin"],
+        ["Life is uncertain. Eat dessert first.", "Ernestine Ulmer"],
+        ["Cooking is an art, but all art requires knowing something about the techniques and materials.", "Nathan Myhrvold"],
+        ["A recipe has no soul. You as the cook must bring soul to the recipe.", "Thomas Keller"],
+        ["The only time to eat diet food is while you're waiting for the steak to cook.", "Julia Child"],
+        ["Good food is the foundation of genuine happiness.", "Auguste Escoffier"],
+        ["Food is memories.", "José Andrés"],
+        ["Everything in moderation, including moderation.", "Julia Child"],
+        ["Cooking is at once child's play and adult joy.", "Craig Claiborne"],
+        ["You don't have to cook fancy or complicated masterpieces — just good food from fresh ingredients.", "Julia Child"],
+        ["In cooking, as in all the arts, simplicity is the sign of perfection.", "Curnonsky"],
+        ["A good meal ought to begin with hunger.", "French proverb"],
+        ["The belly rules the mind.", "Spanish proverb"],
+    ];
+    const day = Math.floor(Date.now() / 86400000); // days since epoch
+    const [text, author] = quotes[day % quotes.length];
+    const el = document.getElementById('qotd');
+    if (el) el.innerHTML = `"${text}" <cite>— ${author}</cite>`;
+})();
+
+// ── Header logo hover: show full photo ──
+(function() {
+    const logo = document.getElementById('header-logo');
+    const preview = document.getElementById('logo-preview');
+
+    logo.addEventListener('mouseenter', () => {
+        preview.style.display = 'block';
+        positionPreview();
+    });
+
+    logo.addEventListener('mousemove', positionPreview);
+
+    logo.addEventListener('mouseleave', () => {
+        preview.style.display = 'none';
+    });
+
+    function positionPreview() {
+        const rect = logo.getBoundingClientRect();
+        const pw = 280, ph = 280, margin = 10;
+        let left = rect.right + margin;
+        let top = rect.bottom + margin;
+        if (left + pw > window.innerWidth - margin) left = rect.left - pw - margin;
+        if (top + ph > window.innerHeight - margin) top = rect.top - ph - margin;
+        preview.style.left = left + 'px';
+        preview.style.top = top + 'px';
+    }
+})();
+
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const searchEl = document.getElementById('search');
+    const search = params.get('search');
+    if (search) {
+        searchEl.value = search;
+        searchEl.focus();
+        searchEl.setSelectionRange(search.length, search.length);
+    }
+    const source = params.get('source') || '';
+    const radios = document.querySelectorAll('input[name="source"]');
+    radios.forEach(r => { r.checked = (r.value === source); });
+
+    const diet = params.get('diet') || '';
+    const dietRadios = document.querySelectorAll('input[name="diet"]');
+    dietRadios.forEach(r => { r.checked = (r.value === diet); });
+
+    function updateMenuBtn() {
+        const selected = document.querySelector('input[name="source"]:checked');
+        const src = selected ? selected.value : '';
+        const btn = document.getElementById('menu-btn');
+        btn.href = src ? `/?suggest=1&source=${encodeURIComponent(src)}` : '/?suggest=1';
+    }
+    updateMenuBtn();
+
+    [...radios, ...dietRadios].forEach(r => {
+        r.addEventListener('change', () => {
+            updateMenuBtn();
+            r.closest('form').submit();
+        });
+    });
+
+    const isTouchDevice = window.matchMedia('(hover: none)').matches;
+    let debounceTimer = null;
+    document.getElementById('search').addEventListener('input', function() {
+        if (isTouchDevice) return; // mobile: submit on Enter only (native form behaviour)
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => this.closest('form').submit(), 400);
+    });
+})();
+
+const tooltip = document.getElementById('ing-tooltip');
+const tooltipBody = document.getElementById('ing-tooltip-body');
+const cache = {};
+let hideTimer = null;
+
+function showTooltip(x, y, html) {
+    tooltipBody.innerHTML = html;
+    tooltip.style.display = 'block';
+    positionTooltip(x, y);
+}
+
+function positionTooltip(x, y) {
+    const margin = 12;
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    let left = x + margin;
+    let top = y + margin;
+    if (left + tw > window.innerWidth - margin) left = x - tw - margin;
+    if (top + th > window.innerHeight - margin) top = y - th - margin;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+}
+
+document.querySelectorAll('.recipe-name').forEach(link => {
+    const item = link.closest('.recipe-item');
+    const id = item.dataset.recipeId;
+    const url = item.dataset.recipeUrl;
+    const source = item.dataset.recipeSource;
+
+    link.addEventListener('mouseenter', e => {
+        clearTimeout(hideTimer);
+        if (cache[id] !== undefined) {
+            showTooltip(e.clientX, e.clientY, renderIngredients(cache[id]));
+            return;
+        }
+        showTooltip(e.clientX, e.clientY, '<span class="tip-loading">Loading…</span>');
+        fetch(`/api/ingredients?id=${encodeURIComponent(id)}&url=${encodeURIComponent(url)}&source=${encodeURIComponent(source)}`)
+            .then(r => r.json())
+            .then(data => {
+                cache[id] = data.ingredients || [];
+                tooltipBody.innerHTML = renderIngredients(cache[id]);
+            })
+            .catch(() => { cache[id] = []; tooltipBody.innerHTML = '<span class="tip-loading">Unavailable</span>'; });
+    });
+
+    link.addEventListener('mousemove', e => positionTooltip(e.clientX, e.clientY));
+
+    link.addEventListener('mouseleave', () => {
+        hideTimer = setTimeout(() => { tooltip.style.display = 'none'; }, 120);
+    });
+});
+
+function renderIngredients(ings) {
+    if (!ings || ings.length === 0) return '<span class="tip-loading">No ingredients available</span>';
+    return '<ul>' + ings.map(i => `<li>${i}</li>`).join('') + '</ul>';
+}
+
+// ── Schedule popover ──
+const popover = document.getElementById('schedule-popover');
+const popDate = document.getElementById('pop-date');
+const popSection = document.getElementById('pop-section');
+const popConfirm = document.getElementById('pop-confirm');
+const popCancel = document.getElementById('pop-cancel');
+const popStatus = document.getElementById('pop-status');
+let currentRid = null;
+let currentName = null;
+let currentUrl = null;
+
+// Default date to tomorrow
+function defaultDate() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+}
+
+function openPopover(btn) {
+    currentRid  = btn.dataset.rid  || null;
+    currentName = btn.dataset.name || null;
+    currentUrl  = btn.dataset.url  || null;
+    popDate.value = defaultDate();
+    popSection.value = 'dinner';
+    popStatus.textContent = '';
+    popStatus.className = 'pop-status';
+    popConfirm.disabled = false;
+    popConfirm.textContent = 'Schedule';
+
+    const rect = btn.getBoundingClientRect();
+    const pw = 220;
+    let left = rect.right + 8;
+    if (left + pw > window.innerWidth - 10) left = rect.left - pw - 8;
+    let top = rect.top;
+    popover.style.left = left + 'px';
+    popover.style.top = top + 'px';
+    popover.style.display = 'block';
+}
+
+function closePopover() {
+    popover.style.display = 'none';
+    currentRid = currentName = currentUrl = null;
+}
+
+document.querySelectorAll('.schedule-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+        tooltip.style.display = 'none';
+        if (popover.style.display === 'block' && currentRid === btn.dataset.rid) {
+            closePopover();
+        } else {
+            openPopover(btn);
+        }
+    });
+});
+
+popCancel.addEventListener('click', closePopover);
+
+document.addEventListener('click', e => {
+    if (!popover.contains(e.target) && !e.target.classList.contains('schedule-btn')) {
+        closePopover();
+    }
+});
+
+popConfirm.addEventListener('click', () => {
+    if ((!currentRid && !currentName) || !popDate.value) return;
+    popConfirm.disabled = true;
+    popConfirm.textContent = 'Scheduling…';
+    popStatus.textContent = '';
+
+    const payload = {date: popDate.value, section: popSection.value};
+    if (currentRid) {
+        payload.rid = currentRid;
+    } else {
+        payload.name = currentName;
+        payload.url  = currentUrl;
+    }
+
+    fetch('/api/schedule_to_pte', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            popStatus.textContent = '✓ Scheduled!';
+            popStatus.className = 'pop-status ok';
+            popConfirm.textContent = 'Schedule';
+            const btn = document.querySelector(`.schedule-btn[data-rid="${currentRid}"]`);
+            if (btn) btn.classList.add('scheduled');
+            setTimeout(closePopover, 1200);
+        } else {
+            popStatus.textContent = data.error || 'Error';
+            popStatus.className = 'pop-status err';
+            popConfirm.disabled = false;
+            popConfirm.textContent = 'Schedule';
+        }
+    })
+    .catch(() => {
+        popStatus.textContent = 'Network error';
+        popStatus.className = 'pop-status err';
+        popConfirm.disabled = false;
+        popConfirm.textContent = 'Schedule';
+    });
+});
+</script>
+</body>
+</html>

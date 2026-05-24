@@ -737,7 +737,7 @@
       const datePart = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' });
       const h = d.getHours();
       const timePart = (h % 12 || 12) + (h < 12 ? 'am' : 'pm');
-      return `${datePart}, ${timePart}`;
+      return `Lachen, ${datePart}, ${timePart}`;
     };
     // Latest reading timestamp goes in the page title; the stat cards just show the values.
     document.getElementById('header-date').textContent = fmtDate(lastWater.x);

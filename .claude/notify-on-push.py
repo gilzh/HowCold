@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+"""
+Hook: fires after git push in the HowCold project.
+Reads the latest temperatures from temperatures.csv and sends a push notification via ntfy.sh.
+"""
+import sys, json, subprocess
+
+data = json.load(sys.stdin)
+cmd  = data.get('tool_input', {}).get('command', '')
+
+if 'git push' not in cmd:
+    sys.exit(0)
+
+csv_path = '/Users/gilles/Coding/HowCold/temperatures.csv'
+try:
+    lines = [l.strip() for l in open(csv_path) if l.strip() and not l.startswith('Day,')]
+    if not lines:
+        sys.exit(0)
+    p = lines[-1].split(',')
+    day, time, water, air = p[0], p[1], p[2], p[3]
+    msg = f'🌊 {water}°C water · {air}°C air  ({day} {time})'
+except Exception:
+    sys.exit(0)
+
+subprocess.run([
+    'curl', '-s',
+    '-H', 'Title: HowCold updated',
+    '-H', 'Priority: low',
+    '-H', 'Tags: thermometer',
+    '-d', msg,
+    'https://ntfy.sh/gilzh-howcold'
+], check=False)
