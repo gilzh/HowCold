@@ -32,6 +32,16 @@
       font-weight: 700;
       color: #1a365d;
     }
+    header h1 .timestamp {
+      font-weight: 400;
+      color: #718096;
+      font-size: 18px;
+      margin-left: 4px;
+      letter-spacing: -0.005em;
+    }
+    @media (max-width: 480px) {
+      header h1 .timestamp { font-size: 14px; display: block; margin-left: 48px; margin-top: 2px; }
+    }
     header p {
       font-size: 14px;
       color: #718096;
@@ -194,7 +204,7 @@
 <body>
   <div class="container">
     <header>
-      <h1><img src="loutre-portrait.png" alt="Loutre" style="width: 40px; height: 40px; vertical-align: middle; margin-right: 8px; border-radius: 50%;"> How Cold?</h1>
+      <h1><img src="loutre-portrait.png" alt="Loutre" style="width: 40px; height: 40px; vertical-align: middle; margin-right: 8px; border-radius: 50%;"> How Cold?<span class="timestamp" id="header-date"></span></h1>
       <p>Lachen water and air daily temperatures ☀️</p>
     </header>
 
@@ -203,12 +213,10 @@
         <div class="stat water">
           <div class="stat-label" id="label-water"></div>
           <div class="stat-value" id="stat-water-latest">—</div>
-          <div class="stat-secondary" id="stat-water-avg">—</div>
         </div>
         <div class="stat air">
           <div class="stat-label" id="label-air">Air</div>
           <div class="stat-value" id="stat-air-latest">—</div>
-          <div class="stat-secondary" id="stat-air-avg">—</div>
         </div>
       </div>
       <div class="chart-wrapper">
@@ -288,11 +296,6 @@
     const temps = dataPoints.map(d => d.water);
     const lastWater = [...dataPoints].reverse().find(d => d.water != null);
     const lastAir   = [...dataPoints].reverse().find(d => d.air != null);
-    const cutoff = new Date(dataPoints[dataPoints.length - 1].x);
-    cutoff.setDate(cutoff.getDate() - 5);
-    const recent = dataPoints.filter(d => d.x >= cutoff);
-    const avg5d    = recent.map(d => d.water).reduce((a, b) => a + b, 0) / recent.length;
-    const avg5dAir = recent.map(d => d.air).reduce((a, b) => a + b, 0) / recent.length;
 
     const fmtDate = (d) => {
       const datePart = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' });
@@ -300,12 +303,12 @@
       const timePart = (h % 12 || 12) + (h < 12 ? 'am' : 'pm');
       return `${datePart}, ${timePart}`;
     };
+    // Latest reading timestamp goes in the page title; the stat cards just show the values.
+    document.getElementById('header-date').textContent = fmtDate(lastWater.x);
     document.getElementById('label-water').textContent = ` `;
-    document.getElementById('stat-water-latest').innerHTML = `<span class="stat-hint">${fmtDate(lastWater.x)}</span>💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`;
-    document.getElementById('stat-water-avg').innerHTML    = `<span class="stat-hint">last 5 days</span>🗓️ ${avg5d.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`;
     document.getElementById('label-air').textContent = ` `;
-    document.getElementById('stat-air-latest').innerHTML = `<span class="stat-hint">${fmtDate(lastAir.x)}</span>💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`;
-    document.getElementById('stat-air-avg').innerHTML    = `<span class="stat-hint">last 5 days</span>🗓️ ${avg5dAir.toFixed(1)}<span>&deg;C</span>`;
+    document.getElementById('stat-air-latest').innerHTML = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`;
 
     // Chart
     const ctx = document.getElementById('chart').getContext('2d');
