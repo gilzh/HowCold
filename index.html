@@ -318,8 +318,8 @@
     }
     .globe-loader {
       position: relative;
-      width: 190px;
-      height: 190px;
+      width: 254px;
+      height: 254px;
       cursor: pointer;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -634,31 +634,31 @@
         <div class="whirl">
           <svg viewBox="0 0 200 200" aria-hidden="true">
             <g class="ring-dash">
-              <circle cx="100" cy="100" r="96" fill="none" stroke="#2d3748" stroke-width="1" stroke-dasharray="2 6" opacity="0.45" />
+              <circle cx="100" cy="100" r="72" fill="none" stroke="#2d3748" stroke-width="1" stroke-dasharray="2 6" opacity="0.45" />
             </g>
             <g class="ring-arc">
-              <circle cx="100" cy="100" r="90" fill="none" stroke="#2d3748" stroke-width="1.25" stroke-linecap="round" stroke-dasharray="110 330" stroke-dashoffset="0" opacity="0.75" />
-              <circle cx="100" cy="100" r="90" fill="none" stroke="#2d3748" stroke-width="1.25" stroke-linecap="round" stroke-dasharray="40 240" stroke-dashoffset="-180" opacity="0.45" />
+              <circle cx="100" cy="100" r="68" fill="none" stroke="#2d3748" stroke-width="1.25" stroke-linecap="round" stroke-dasharray="110 330" stroke-dashoffset="0" opacity="0.75" />
+              <circle cx="100" cy="100" r="68" fill="none" stroke="#2d3748" stroke-width="1.25" stroke-linecap="round" stroke-dasharray="40 240" stroke-dashoffset="-180" opacity="0.45" />
             </g>
           </svg>
         </div>
 
         <svg id="globe" viewBox="0 0 200 200" aria-hidden="true">
           <defs>
-            <clipPath id="disc"><circle cx="100" cy="100" r="70" /></clipPath>
+            <clipPath id="disc"><circle cx="100" cy="100" r="53" /></clipPath>
             <radialGradient id="shade" cx="50%" cy="50%" r="50%">
               <stop offset="60%" stop-color="#000" stop-opacity="0" />
               <stop offset="100%" stop-color="#000" stop-opacity="0.08" />
             </radialGradient>
           </defs>
-          <circle cx="100" cy="100" r="70" fill="#fff" stroke="#2d3748" stroke-width="1.25" />
+          <circle cx="100" cy="100" r="53" fill="#fff" stroke="#2d3748" stroke-width="1.25" />
           <g clip-path="url(#disc)">
             <g id="graticule" fill="none" stroke="#2d3748" stroke-width="0.4" opacity="0.22"></g>
             <g id="countries" fill="none" stroke="#2d3748" stroke-width="0.9" stroke-linejoin="round" stroke-linecap="round"></g>
             <g id="cities" fill="#2d3748"></g>
-            <circle cx="100" cy="100" r="70" fill="url(#shade)" />
+            <circle cx="100" cy="100" r="53" fill="url(#shade)" />
           </g>
-          <circle cx="100" cy="100" r="70" fill="none" stroke="#2d3748" stroke-width="1.25" />
+          <circle cx="100" cy="100" r="53" fill="none" stroke="#2d3748" stroke-width="1.25" />
           <g id="cityLabels"></g>
         </svg>
       </div>
@@ -702,6 +702,7 @@
 
         <footer>
       🏊‍♀️ Sunday Morning Swimmers &middot; <a href="https://chat.whatsapp.com/EnH72JSFwQuGByphmu8cTi?mode=gi_t" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Join our WhatsApp group</a>
+      <div style="margin-top:6px;font-size:10px;color:#cbd5e0;letter-spacing:0.03em;font-variant-numeric:tabular-nums">v2026-05-24-15:42</div>
     </footer>
   </div>
 
@@ -1284,7 +1285,7 @@ window.addEventListener('lachen-air-updated', (e) => {
 });
 
       const projection = d3.geoOrthographic()
-        .scale(70).translate([100, 100]).clipAngle(90);
+        .scale(53).translate([100, 100]).clipAngle(90);
       const path = d3.geoPath(projection);
       const graticule = d3.geoGraticule().step([15, 15])();
 
@@ -1358,7 +1359,7 @@ window.addEventListener('lachen-air-updated', (e) => {
         }
         gGraticule.innerHTML = `<path d="${path(graticule) || ''}" />`;
 
-        const cx = 100, cy = 100, R = 70;
+        const cx = 100, cy = 100, R = 53;
         // A point is on the visible hemisphere when its great-circle distance
         // from the rotation center is ≤ 90°. clipAngle(90) clips path geometry,
         // but `projection([lon,lat])` still returns coordinates for back-facing
