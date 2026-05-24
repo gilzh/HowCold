@@ -653,8 +653,10 @@
     // Pulls daily high/low + weather code from Open-Meteo. Free, no API key.
     function weatherEmoji(code) {
       // WMO weather interpretation codes, collapsed to a small icon set.
-      if (code === 0) return '☀️';                  // clear
-      if (code <= 3) return '⛅';                     // partly/mostly cloudy
+      if (code === 0) return '☀️';                  // clear sky
+      if (code === 1) return '🌤️';                 // mainly clear
+      if (code === 2) return '⛅';                   // partly cloudy
+      if (code === 3) return '☁️';                  // overcast
       if (code <= 48) return '🌫️';                 // fog
       if (code <= 57) return '🌦️';                 // drizzle
       if (code <= 67) return '🌧️';                 // rain
