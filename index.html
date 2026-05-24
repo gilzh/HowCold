@@ -430,7 +430,7 @@
     <header>
       <div class="titles">
         <h1><img src="loutre-portrait.png" alt="Loutre" style="width: 40px; height: 40px; vertical-align: middle; margin-right: 8px; border-radius: 50%;"> How Cold?<span class="timestamp" id="header-date"></span></h1>
-        <p>Lachen water and air daily temperatures ☀️</p>
+        <p id="tagline">Lachen water and air daily temperatures ☀️</p>
       </div>
       <button type="button" class="refresh-btn" id="refresh-btn" title="Fetch the latest water &amp; air temperature for Lachen" aria-label="Refresh Lachen temperatures">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -550,12 +550,51 @@
       const datePart = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' });
       const h = d.getHours();
       const timePart = (h % 12 || 12) + (h < 12 ? 'am' : 'pm');
-      return `${datePart}, ${timePart}`;
+      return `Lachen, ${datePart}, ${timePart}`;
     };
     // Latest reading timestamp goes in the page title; the stat cards just show the values.
     document.getElementById('header-date').textContent = fmtDate(lastWater.x);
     document.getElementById('stat-water-latest').innerHTML = `💦 ${lastWater.water.toFixed(1)}<span>&deg;C</span>`;
     document.getElementById('stat-air-latest').innerHTML   = `💨 ${lastAir.air.toFixed(1)}<span>&deg;C</span>`;
+
+    // Tagline: a random word of wisdom / fortune for the Sunday Morning Swimmers.
+    // Picked once per page load — refresh the page to get a new one.
+    const TAGLINES = [
+      'Cold water makes warm friends. 🤝',
+      'The lake is always honest. 🌊',
+      'A swim a day keeps existential dread away. 🧘',
+      'Today, be the otter you wish to see in the world. 🦦',
+      'Brave the cold; deserve the coffee. ☕',
+      'Some days you swim, some days you just float. 🛟',
+      'Lake first, opinions later. 🤐',
+      'Goosebumps are applause from your skin. 👏',
+      'Better to shiver with friends than shiver alone. 🥶',
+      'The first plunge is the worst — and the best. 💥',
+      'Water remembers nothing. Be like water. 💧',
+      'If in doubt, jump in. 🤿',
+      'Today\'s forecast: 100% chance of bragging rights. 📣',
+      'Swimmers don\'t have bad moods, just bad layers. 🧥',
+      'Cold lake, warm heart. ❤️',
+      'An otter never checks the thermometer. 🦦',
+      'Splash today, smile tomorrow. 😊',
+      'Steam from the thermos is a love language. ☕',
+      'Don\'t trust a calm lake. Don\'t fear a choppy one. 🌬️',
+      'Every Sunday is a small adventure. 🗺️',
+      'The bravest thing you\'ll do today is the first three steps in. 🚶',
+      'Towels dry. Memories don\'t. 📷',
+      'You came for the swim; you stayed for the people. 👯',
+      'No bad swims. Only good stories. 📖',
+      'The fish are watching. Impress them. 🐟',
+      'Discomfort is just adventure that hasn\'t finished. 🧭',
+      'You can\'t step in the same lake twice. ♾️',
+      'Layers are a state of mind. 🧅',
+      'The lake doesn\'t care if you slept badly. 😴',
+      'Faint heart never warmed a swimmer. 💪',
+      'Today\'s motto: in, then out, then cake. 🍰',
+      'You will be cold. You will be glad. ✨',
+    ];
+    document.getElementById('tagline').textContent =
+      TAGLINES[Math.floor(Math.random() * TAGLINES.length)];
 
     // Chart
     const ctx = document.getElementById('chart').getContext('2d');
@@ -938,7 +977,7 @@ async function fetchAirTemps(cities) {
     entries.forEach((entry, i) => {
       const t = entry?.current?.temperature_2m;
       // Lachen keeps a decimal (matches the stat-pill style); others round to int.
-      if (typeof t === 'number') targets[i].air = targets[i].highlight ? t : Math.round(t);
+      if (typeof t === 'number') targets[i].air = Math.round(t);
     });
   } catch (e) { console.warn('Air temp fetch failed:', e); }
 }
@@ -1066,9 +1105,9 @@ window.addEventListener('lachen-air-updated', (e) => {
           const tempX  = side === 1 ? outX + 1 : outX - 1;
 
           // Air temp + name + local time, uniform layout for all cities.
-          // Lachen's air is a decimal (chart reading); others are rounded ints.
+          // All air temps are rounded ints for the globe label.
           const hasTemp  = typeof c.air === 'number';
-          const airText  = hasTemp ? (c.highlight ? c.air.toFixed(1) : c.air) + '°' : '';
+          const airText  = hasTemp ? Math.round(c.air) + '°' : '';
           labels += townLabel(tempX, outY, airText, c.name, fmtLocalTime(c.tz), side, c.id);
         }
         gCities.innerHTML = dots;
