@@ -122,6 +122,35 @@
       position: relative;
       height: 380px;
     }
+    /* Range toggle pills above the chart */
+    .range-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .range-toggle button {
+      appearance: none;
+      border: none;
+      background: #edf2f7;
+      color: #718096;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .range-toggle button:hover { background: #e2e8f0; color: #4a5568; }
+    .range-toggle button.active {
+      background: linear-gradient(135deg, #ebf4fc 0%, #d6e8f7 100%);
+      color: #1f5b94;
+      box-shadow: 0 1px 2px rgba(49,130,206,0.10),
+                  inset 0 0 0 1px rgba(49,130,206,0.10);
+    }
+    .range-toggle button.active:hover { background: linear-gradient(135deg, #ebf4fc 0%, #d6e8f7 100%); }
     /* ---------- 7-day forecast card ---------- */
     .forecast-card h2 {
       font-size: 13px;
@@ -311,6 +340,10 @@
           <div class="stat-value" id="stat-air-latest">—</div>
         </div>
       </div>
+      <div class="range-toggle" id="range-toggle">
+        <button type="button" data-range="recent" class="active">Past 2 months</button>
+        <button type="button" data-range="full">Full 2026</button>
+      </div>
       <div class="chart-wrapper">
         <canvas id="chart"></canvas>
       </div>
@@ -435,11 +468,15 @@
     // Use Saturday ticks only
     const allTickValues = saturdayTickValues.slice().sort((a, b) => a - b);
 
+    // Default chart view: last ~2 months. Toggle can expand to the full year.
+    const twoMonthsAgo = new Date(rangeEnd);
+    twoMonthsAgo.setDate(twoMonthsAgo.getDate() - 60);
+
     const gradient = ctx.createLinearGradient(0, 0, 0, 380);
     gradient.addColorStop(0, 'rgba(49, 130, 206, 0.25)');
     gradient.addColorStop(1, 'rgba(49, 130, 206, 0.02)');
 
-    new Chart(ctx, {
+    const chart = new Chart(ctx, {
       type: 'line',
       data: {
         datasets: [
@@ -513,6 +550,7 @@
         scales: {
           x: {
             type: 'time',
+            min: twoMonthsAgo,
             time: {
               tooltipFormat: 'dd MMM HH:mm',
             },
@@ -545,6 +583,18 @@
           }
         }
       }
+    });
+
+    // Range toggle: switch between "recent 2 months" and "full year".
+    document.getElementById('range-toggle').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-range]');
+      if (!btn) return;
+      const range = btn.dataset.range;
+      chart.options.scales.x.min = range === 'recent' ? twoMonthsAgo : undefined;
+      chart.update();
+      document.querySelectorAll('#range-toggle button').forEach(b =>
+        b.classList.toggle('active', b === btn)
+      );
     });
 
 
