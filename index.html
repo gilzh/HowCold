@@ -921,9 +921,11 @@
       // Initial state: Port Elizabeth's fact, pulled from FUN_FACTS like the rest.
       showFact('elizabeth');
 
-// Fetch live air temps for non-Lachen cities from Open-Meteo
+// Fetch live "current" air temps from Open-Meteo for every pin on the globe.
+// Lachen is included too — without this, its globe label would show the last
+// CSV reading (likely the morning cron snapshot) instead of the current temp.
 async function fetchAirTemps(cities) {
-  const targets = cities.filter(c => !c.highlight);
+  const targets = cities.slice();
   if (!targets.length) return;
   const lats = targets.map(c => c.lat).join(',');
   const lons = targets.map(c => c.lon).join(',');
@@ -935,7 +937,8 @@ async function fetchAirTemps(cities) {
     const entries = Array.isArray(j) ? j : [j];
     entries.forEach((entry, i) => {
       const t = entry?.current?.temperature_2m;
-      if (typeof t === 'number') targets[i].air = Math.round(t);
+      // Lachen keeps a decimal (matches the stat-pill style); others round to int.
+      if (typeof t === 'number') targets[i].air = targets[i].highlight ? t : Math.round(t);
     });
   } catch (e) { console.warn('Air temp fetch failed:', e); }
 }
