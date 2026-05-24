@@ -322,6 +322,45 @@
     }
     .globe-legend .sw-water { background: #3182ce; }
     .globe-legend .sw-air   { background: #e53e3e; }
+
+    /* ---------- Fun fact card ---------- */
+    .fact-card h2 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a0aec0;
+      margin-bottom: 14px;
+    }
+    .fact-card h2 .fact-city {
+      color: #1f5b94;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 16px;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+    .fact-card p {
+      font-size: 15px;
+      line-height: 1.55;
+      color: #2d3748;
+    }
+    .fact-card .fact-hint {
+      margin-top: 14px;
+      font-size: 11px;
+      color: #a0aec0;
+      letter-spacing: 0.02em;
+    }
+
+    /* Clickable city labels on the globe */
+    #cityLabels .city-hit {
+      cursor: pointer;
+    }
+    #cityLabels .city-hit:hover .city-name {
+      color: #1f5b94 !important;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
   </style>
 </head>
 <body>
@@ -396,6 +435,13 @@
       <div class="globe-legend">
         <span><span class="swatch sw-air"></span>Live air °C</span>
       </div>
+    </div>
+
+    <!-- Fun fact card -->
+    <div class="card fact-card">
+      <h2>Fun Fact:<span class="fact-city" id="fact-city">Port Elizabeth</span></h2>
+      <p id="fact-text">Port Elizabeth was named not after Queen Elizabeth, but after the wife of its first British governor in 1820, who passed away during their journey from India to South Africa.</p>
+      <div class="fact-hint">↑ Click a city name on the globe to swap the fact.</div>
     </div>
 
         <footer>
@@ -664,18 +710,39 @@
       // the others fetch their air temp from Open-Meteo. `tz` is an IANA
       // timezone used to display each city's current local time.
       const CITIES = [
-        { id:'lachen',      name:'🇨🇭 Lachen',              lon:  8.85,  lat: 47.19, tz:'Europe/Zurich',       air: lastAir.air, highlight: true },
-        { id:'monterey',    name:'🇺🇸 Monterey',            lon:-121.89, lat: 36.60, tz:'America/Los_Angeles' },
-        { id:'cape-may',    name:'🇺🇸 Cape May',            lon:-74.92,  lat: 38.93, tz:'America/New_York' },
-        { id:'bois-plage',  name:'🇫🇷 Le Bois-Plage-en-Ré', lon: -1.38,  lat: 46.18, tz:'Europe/Paris' },
-        { id:'saint-malo',  name:'🇫🇷 Saint-Malo',          lon: -2.02,  lat: 48.65, tz:'Europe/Paris' },
-        { id:'hilversum',   name:'🇳🇱 Hilversum',           lon: 5.10, lat: 52.13, tz:'Europe/Paris' },
-        { id:'sassari',     name:'🇮🇹 Sassari',             lon:  8.56,  lat: 40.73, tz:'Europe/Paris' },
-        { id:'moscow',      name:'🇷🇺 Moscow',              lon:  37.62, lat: 55.75, tz:'Europe/Moscow' },
-        { id:'elizabeth',   name:'🇿🇦 Port Elizabeth',      lon: 25.34, lat: -33.55, tz:'Africa/Johannesburg' },
-        { id:'benoni',      name:'🇿🇦 Benoni',              lon: 28.19, lat: -26.11, tz:'Africa/Johannesburg' },
-        { id:'sydney',      name:'🇦🇺 Sydney',              lon: 151.21, lat: -33.87, tz:'Australia/Sydney' },
-       ];
+        { id:'lachen',      name:'🇨🇭 Lachen',              shortName:'Lachen',              lon:  8.85,  lat: 47.19, tz:'Europe/Zurich',       air: lastAir.air, highlight: true },
+        { id:'monterey',    name:'🇺🇸 Monterey',            shortName:'Monterey',            lon:-121.89, lat: 36.60, tz:'America/Los_Angeles' },
+        { id:'cape-may',    name:'🇺🇸 Cape May',            shortName:'Cape May',            lon:-74.92,  lat: 38.93, tz:'America/New_York' },
+        { id:'bois-plage',  name:'🇫🇷 Le Bois-Plage-en-Ré', shortName:'Le Bois-Plage-en-Ré', lon: -1.38,  lat: 46.18, tz:'Europe/Paris' },
+        { id:'saint-malo',  name:'🇫🇷 Saint-Malo',          shortName:'Saint-Malo',          lon: -2.02,  lat: 48.65, tz:'Europe/Paris' },
+        { id:'sassari',     name:'🇮🇹 Sassari',             shortName:'Sassari',             lon:  8.56,  lat: 40.73, tz:'Europe/Rome' },
+        { id:'moscow',      name:'🇷🇺 Moscow',              shortName:'Moscow',              lon:  37.62, lat: 55.75, tz:'Europe/Moscow' },
+        { id:'cape-town',   name:'🇿🇦 Cape Town',           shortName:'Cape Town',           lon: 18.42,  lat: -33.95, tz:'Africa/Johannesburg' },
+        { id:'sydney',      name:'🇦🇺 Sydney',              shortName:'Sydney',              lon: 151.21, lat: -33.87, tz:'Australia/Sydney' },
+      ];
+
+      // One fun fact per city. Shown in the card below the globe when its
+      // label is clicked. Port Elizabeth is the default (not on the globe).
+      const FUN_FACTS = {
+        'lachen':     'Lachen sits on the Obersee, the upper basin of Lake Zurich — its name comes from the Old High German word "lahha", meaning a boundary marker, not from the modern German word for "to laugh".',
+        'monterey':   'Monterey was the capital of Alta California under Spain, Mexico, and briefly the United States — and its Cannery Row was once the sardine-canning capital of the world before John Steinbeck made it famous in his 1945 novel.',
+        'cape-may':   'Cape May is the oldest seaside resort in the United States, dating to the 1760s, and the entire town is a National Historic Landmark thanks to having one of the largest collections of Victorian buildings in the country.',
+        'bois-plage': 'Le Bois-Plage-en-Ré sits on Île de Ré, a flat island so famous for its donkeys that locals once dressed them in striped trousers ("ânes en culotte") to protect their legs from mosquito bites in the salt marshes.',
+        'saint-malo': 'Saint-Malo briefly declared itself an independent republic from 1590 to 1594, with the defiant motto "Ni Français, ni Breton, Malouin suis" — "Neither French, nor Breton, I am from Saint-Malo".',
+        'sassari':    'Every August Sassari celebrates "I Candelieri", a 13th-century festival in which guilds carry enormous wooden candle-shaped pillars through the streets — a tradition now recognised by UNESCO as part of Italy\'s intangible heritage.',
+        'moscow':     'The Moscow Metro is nicknamed the "underground palace" — its Stalin-era stations are decorated with chandeliers, mosaics, and marble, and Mayakovskaya station won the Grand Prix at the 1939 New York World\'s Fair.',
+        'cape-town':  'Table Mountain is roughly 600 million years old — about six times older than the Himalayas — making it one of the oldest mountains on Earth, and it\'s often crowned by a flat cloud locals call "the tablecloth".',
+        'sydney':     'The Sydney Opera House is covered in 1,056,006 glossy white and matte cream tiles, all self-cleaned by the rain — and architect Jørn Utzon famously cracked the design after watching himself peel an orange into segments.',
+      };
+
+      const factCityEl = document.getElementById('fact-city');
+      const factTextEl = document.getElementById('fact-text');
+      function showFact(id) {
+        const city = CITIES.find(c => c.id === id);
+        if (!city || !FUN_FACTS[id]) return;
+        factCityEl.textContent = city.shortName;
+        factTextEl.textContent = FUN_FACTS[id];
+      }
 
 // Fetch live air temps for non-Lachen cities from Open-Meteo
 async function fetchAirTemps(cities) {
@@ -726,7 +793,7 @@ fetchAirTemps(CITIES).then(() => render());
 
       // Render a city name + local time as foreignObject so flag emoji render on iOS/Safari.
       // Name and time sit on a single line (time is muted) so adjacent labels don't overlap.
-      function townLabel(x, y, name, time, side) {
+      function townLabel(x, y, name, time, side, cityId) {
         const w = 175, h = 14;
         const fx = side === 1 ? x : x - w;
         const align = side === 1 ? 'left' : 'right';
@@ -735,6 +802,7 @@ fetchAirTemps(CITIES).then(() => render());
           `text-align:${align}`,
           'letter-spacing:0.02em','line-height:1',
           'white-space:nowrap',
+          'cursor:pointer',
         ].join(';');
         const nameStyle = [
           'font-size:8.5px','font-weight:700','color:#2d3748',
@@ -747,7 +815,7 @@ fetchAirTemps(CITIES).then(() => render());
           'font-variant-numeric:tabular-nums',
         ].join(';');
         const timeMarkup = time ? `<span style="${timeStyle}">${time}</span>` : '';
-        return `<foreignObject x="${fx.toFixed(2)}" y="${(y - 5).toFixed(2)}" width="${w}" height="${h}"><div xmlns="http://www.w3.org/1999/xhtml" style="${wrapStyle}"><span style="${nameStyle}">${name}</span>${timeMarkup}</div></foreignObject>`;
+        return `<foreignObject class="city-hit" data-city-id="${cityId}" x="${fx.toFixed(2)}" y="${(y - 5).toFixed(2)}" width="${w}" height="${h}"><div xmlns="http://www.w3.org/1999/xhtml" style="${wrapStyle}" data-city-id="${cityId}"><span class="city-name" style="${nameStyle}">${name}</span>${timeMarkup}</div></foreignObject>`;
       }
 
       function render() {
@@ -806,7 +874,7 @@ fetchAirTemps(CITIES).then(() => render());
           if (hasTemp) {
             labels += `<text class="temp-air" x="${tempX.toFixed(2)}" y="${(outY + 2.5).toFixed(2)}" text-anchor="${anchor}">${airText}</text>`;
           }
-          labels += townLabel(townX, outY, c.name, fmtLocalTime(c.tz), side);
+          labels += townLabel(townX, outY, c.name, fmtLocalTime(c.tz), side, c.id);
         }
         gCities.innerHTML = dots;
         gLabels.innerHTML = labels;
@@ -823,6 +891,15 @@ fetchAirTemps(CITIES).then(() => render());
       loaderEl.addEventListener('click', () => {
         running = !running;
         loaderEl.classList.toggle('paused', !running);
+      });
+
+      // City labels are clickable: swap the fun fact below the globe.
+      // Stop propagation so the click doesn't also pause/resume the globe.
+      gLabels.addEventListener('click', (e) => {
+        const hit = e.target.closest('[data-city-id]');
+        if (!hit) return;
+        e.stopPropagation();
+        showFact(hit.getAttribute('data-city-id'));
       });
 
       const LON_PERIOD_MS = 16000;
