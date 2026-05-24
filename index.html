@@ -509,8 +509,8 @@
 
     <!-- Fun fact card -->
     <div class="card fact-card">
-      <h2>Fun Fact:<span class="fact-city" id="fact-city">Port Elizabeth</span></h2>
-      <p id="fact-text">Port Elizabeth was named not after Queen Elizabeth, but after the wife of its first British governor in 1820, who passed away during their journey from India to South Africa.</p>
+      <h2>Fun Fact:<span class="fact-city" id="fact-city"></span></h2>
+      <p id="fact-text"></p>
       <div class="fact-hint">↑ Click a city name on the globe to swap the fact.</div>
     </div>
 
@@ -918,6 +918,8 @@
         factCityEl.textContent = cityDisplayName(city);
         factTextEl.textContent = FUN_FACTS[id];
       }
+      // Initial state: Port Elizabeth's fact, pulled from FUN_FACTS like the rest.
+      showFact('elizabeth');
 
 // Fetch live air temps for non-Lachen cities from Open-Meteo
 async function fetchAirTemps(cities) {
