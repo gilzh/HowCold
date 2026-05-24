@@ -735,14 +735,23 @@
         'moscow':     'The Moscow Metro is nicknamed the "underground palace" — its Stalin-era stations are decorated with chandeliers, mosaics, and marble, and Mayakovskaya station won the Grand Prix at the 1939 New York World\'s Fair.',
         'cape-town':  'Table Mountain is roughly 600 million years old — about six times older than the Himalayas — making it one of the oldest mountains on Earth, and it\'s often crowned by a flat cloud locals call "the tablecloth".',
         'sydney':     'The Sydney Opera House is covered in 1,056,006 glossy white and matte cream tiles, all self-cleaned by the rain — and architect Jørn Utzon famously cracked the design after watching himself peel an orange into segments.',
+        'hilversum':  'Hilversum is the media capital of the Netherlands — virtually every Dutch national TV and radio broadcaster is headquartered there, and its 1931 Town Hall, designed by Willem Dudok, is considered one of the most influential modernist buildings of the 20th century.',
+        'elizabeth':  'Port Elizabeth was named not after Queen Elizabeth, but after the wife of its first British governor in 1820, who passed away during their journey from India to South Africa.',
+        'benoni':     'Benoni\'s name comes from the Hebrew for "son of my sorrow" (the name Rachel gave Benjamin in Genesis) — but the town is better known today as the birthplace of Oscar-winning actress Charlize Theron, and as the "City of Lakes" thanks to the chain of mining-pit lakes that thread through it.',
       };
 
       const factCityEl = document.getElementById('fact-city');
       const factTextEl = document.getElementById('fact-text');
+      // Strip any leading flag emoji + whitespace from a city name so the
+      // fun-fact heading reads cleanly ("Port Elizabeth", not "🇿🇦 Port Elizabeth").
+      function cityDisplayName(c) {
+        if (c.shortName) return c.shortName;
+        return (c.name || '').replace(/^[\p{Extended_Pictographic}\p{Emoji_Component}\s]+/u, '').trim();
+      }
       function showFact(id) {
         const city = CITIES.find(c => c.id === id);
         if (!city || !FUN_FACTS[id]) return;
-        factCityEl.textContent = city.shortName;
+        factCityEl.textContent = cityDisplayName(city);
         factTextEl.textContent = FUN_FACTS[id];
       }
 
