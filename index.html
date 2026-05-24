@@ -148,6 +148,14 @@
       position: relative;
       width: 260px;
       height: 260px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Click-to-pause: freeze the whirl rings as well so it reads as "stopped" */
+    .globe-loader.paused .ring-dash,
+    .globe-loader.paused .ring-arc {
+      animation-play-state: paused;
     }
     .globe-loader svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
@@ -608,15 +616,31 @@ fetchAirTemps(CITIES).then(() => render());
         gLabels.innerHTML = labels;
       }
 
-      const startTime = performance.now();
+      // Click the globe to pause/resume rotation (and freeze the whirl).
+      // We track virtual elapsed time so the spin picks up exactly where it left
+      // off rather than jumping forward by the duration of the pause.
+      let running = true;
+      let virtualElapsed = 0;
+      let lastFrame = performance.now();
+
+      const loaderEl = document.querySelector('.globe-loader');
+      loaderEl.addEventListener('click', () => {
+        running = !running;
+        loaderEl.classList.toggle('paused', !running);
+      });
+
       const LON_PERIOD_MS = 16000;
       const TILT = 18;
       function tick(now) {
-        const t = (now - startTime) / LON_PERIOD_MS;
-        const lon = (t * 360) % 360;
-        const wobble = Math.sin((now - startTime) / 4200) * 4;
-        projection.rotate([ -lon, -TILT + wobble, 0 ]);
-        render();
+        if (running) {
+          virtualElapsed += now - lastFrame;
+          const t = virtualElapsed / LON_PERIOD_MS;
+          const lon = (t * 360) % 360;
+          const wobble = Math.sin(virtualElapsed / 4200) * 4;
+          projection.rotate([ -lon, -TILT + wobble, 0 ]);
+          render();
+        }
+        lastFrame = now;
         requestAnimationFrame(tick);
       }
       render();
