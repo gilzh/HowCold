@@ -239,12 +239,13 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
+      display: flex;
+      justify-content: center;
     }
     .detail-scroll::-webkit-scrollbar { display: none; }
     .detail-hours {
       display: flex;
       gap: 8px;
-      min-width: max-content;
       padding-bottom: 2px;
     }
     .detail-hour {
@@ -725,7 +726,7 @@
 
     <!-- 7-day forecast card -->
     <div class="card forecast-card">
-      <h2>7-day forecast — Lachen ⛰️</h2>
+      <h2>This Week</h2>
       <div class="forecast" id="forecast">
         <div class="forecast-placeholder">Loading forecast…</div>
       </div>
