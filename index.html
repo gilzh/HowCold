@@ -280,12 +280,6 @@
       font-variant-numeric: tabular-nums;
       letter-spacing: -0.02em;
     }
-    .detail-feel {
-      font-size: 10px;
-      font-weight: 500;
-      color: #a0aec0;
-      font-variant-numeric: tabular-nums;
-    }
     .detail-precip {
       font-size: 10px;
       font-weight: 600;
@@ -1111,7 +1105,7 @@
     async function loadDetailForecast() {
       const url = 'https://api.open-meteo.com/v1/forecast'
         + '?latitude=47.19&longitude=8.85'
-        + '&hourly=temperature_2m,apparent_temperature,precipitation,weathercode,windspeed_10m'
+        + '&hourly=temperature_2m,precipitation,weathercode,windspeed_10m'
         + '&timezone=Europe/Zurich&forecast_days=2';
       const el = document.getElementById('detail-hours');
       try {
@@ -1126,30 +1120,32 @@
           hour: 'numeric', hour12: false, timeZone: 'Europe/Zurich'
         }).format(nowLocal));
 
+        // 8 tiles at 00:00, 03:00, 06:00 … 21:00
+        const SLOT_HOURS = [0, 3, 6, 9, 12, 15, 18, 21];
         const hours = j.hourly.time
           .map((t, i) => ({
-            dt: new Date(t),
             timeStr: t.slice(11, 16),  // "HH:MM"
             hourNum: parseInt(t.slice(11, 13)),
             dateStr: t.slice(0, 10),
             temp: Math.round(j.hourly.temperature_2m[i]),
-            feel: Math.round(j.hourly.apparent_temperature[i]),
             precip: j.hourly.precipitation[i],
             code: j.hourly.weathercode[i],
             wind: Math.round(j.hourly.windspeed_10m[i]),
           }))
-          .filter(h => h.dateStr === todayStr);
+          .filter(h => h.dateStr === todayStr && SLOT_HOURS.includes(h.hourNum));
 
         if (!hours.length) throw new Error('no hours for today');
 
+        // Highlight the slot whose hour is closest to now (but not in the future)
+        const activeHour = SLOT_HOURS.filter(h => h <= currentHour).pop() ?? 0;
+
         el.innerHTML = hours.map(h => {
-          const isNow = h.hourNum === currentHour;
+          const isNow = h.hourNum === activeHour;
           const precipStr = h.precip > 0 ? `💧 ${h.precip.toFixed(1)} mm` : '';
           return `<div class="detail-hour${isNow ? ' now' : ''}">
             <div class="detail-time">${h.timeStr}</div>
             <div class="detail-icon">${weatherEmoji(h.code)}</div>
             <div class="detail-temp">${h.temp}°</div>
-            <div class="detail-feel">feels ${h.feel}°</div>
             <div class="detail-precip">${precipStr}</div>
             <div class="detail-wind">💨 ${h.wind} km/h</div>
           </div>`;
