@@ -224,6 +224,94 @@
                   inset 0 0 0 1px rgba(49,130,206,0.10);
     }
     .range-toggle button.active:hover { background: linear-gradient(135deg, #ebf4fc 0%, #d6e8f7 100%); }
+    /* ---------- Today's detailed forecast card ---------- */
+    .detail-card { margin-top: 20px; }
+    .detail-card h2 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a0aec0;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .detail-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .detail-scroll::-webkit-scrollbar { display: none; }
+    .detail-hours {
+      display: flex;
+      gap: 8px;
+      min-width: max-content;
+      padding-bottom: 2px;
+    }
+    .detail-hour {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: #f7fafc;
+      border-radius: 14px;
+      padding: 12px 10px 10px;
+      min-width: 58px;
+      transition: transform 0.18s ease;
+    }
+    .detail-hour:hover { transform: translateY(-1px); }
+    .detail-hour.now {
+      background: linear-gradient(135deg, #ebf4fc 0%, #d6e8f7 100%);
+      box-shadow: 0 1px 2px rgba(49,130,206,0.10),
+                  0 6px 16px -6px rgba(49,130,206,0.22),
+                  inset 0 0 0 1px rgba(49,130,206,0.12);
+    }
+    .detail-time {
+      font-size: 11px;
+      font-weight: 700;
+      color: #4a5568;
+      letter-spacing: 0.02em;
+    }
+    .detail-hour.now .detail-time { color: #1f5b94; }
+    .detail-icon { font-size: 22px; line-height: 1; margin: 2px 0; }
+    .detail-temp {
+      font-size: 15px;
+      font-weight: 800;
+      color: #e53e3e;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+    .detail-feel {
+      font-size: 10px;
+      font-weight: 500;
+      color: #a0aec0;
+      font-variant-numeric: tabular-nums;
+    }
+    .detail-precip {
+      font-size: 10px;
+      font-weight: 600;
+      color: #3182ce;
+      font-variant-numeric: tabular-nums;
+      min-height: 14px;
+    }
+    .detail-wind {
+      font-size: 9.5px;
+      font-weight: 500;
+      color: #718096;
+      font-variant-numeric: tabular-nums;
+    }
+    .detail-placeholder {
+      padding: 32px 0;
+      text-align: center;
+      color: #a0aec0;
+      font-size: 12px;
+    }
+    @media (max-width: 480px) {
+      .detail-hour { min-width: 52px; padding: 10px 7px 8px; border-radius: 10px; }
+      .detail-time { font-size: 10px; }
+      .detail-icon { font-size: 18px; }
+      .detail-temp { font-size: 13px; }
+    }
+
     /* ---------- 7-day forecast card ---------- */
     .forecast-card h2 {
       font-size: 13px;
@@ -631,6 +719,16 @@
       </div>
     </div>
 
+    <!-- Today's detailed hourly forecast card -->
+    <div class="card detail-card">
+      <h2>Today's forecast — Lachen 🕐</h2>
+      <div class="detail-scroll">
+        <div class="detail-hours" id="detail-hours">
+          <div class="detail-placeholder">Loading…</div>
+        </div>
+      </div>
+    </div>
+
     <!-- 7-day forecast card -->
     <div class="card forecast-card">
       <h2>7-day forecast — Lachen ⛰️</h2>
@@ -1007,6 +1105,69 @@
       }
     }
     loadForecast();
+
+
+    // ========== Today's detailed hourly forecast ==========
+    async function loadDetailForecast() {
+      const url = 'https://api.open-meteo.com/v1/forecast'
+        + '?latitude=47.19&longitude=8.85'
+        + '&hourly=temperature_2m,apparent_temperature,precipitation,weathercode,windspeed_10m'
+        + '&timezone=Europe/Zurich&forecast_days=2';
+      const el = document.getElementById('detail-hours');
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('detail-forecast ' + r.status);
+        const j = await r.json();
+
+        // Filter to today's hours only
+        const nowLocal = new Date();
+        const todayStr = nowLocal.toLocaleDateString('sv-SE', { timeZone: 'Europe/Zurich' }); // "YYYY-MM-DD"
+        const currentHour = parseInt(new Intl.DateTimeFormat('en-GB', {
+          hour: 'numeric', hour12: false, timeZone: 'Europe/Zurich'
+        }).format(nowLocal));
+
+        const hours = j.hourly.time
+          .map((t, i) => ({
+            dt: new Date(t),
+            timeStr: t.slice(11, 16),  // "HH:MM"
+            hourNum: parseInt(t.slice(11, 13)),
+            dateStr: t.slice(0, 10),
+            temp: Math.round(j.hourly.temperature_2m[i]),
+            feel: Math.round(j.hourly.apparent_temperature[i]),
+            precip: j.hourly.precipitation[i],
+            code: j.hourly.weathercode[i],
+            wind: Math.round(j.hourly.windspeed_10m[i]),
+          }))
+          .filter(h => h.dateStr === todayStr);
+
+        if (!hours.length) throw new Error('no hours for today');
+
+        el.innerHTML = hours.map(h => {
+          const isNow = h.hourNum === currentHour;
+          const precipStr = h.precip > 0 ? `💧 ${h.precip.toFixed(1)} mm` : '';
+          return `<div class="detail-hour${isNow ? ' now' : ''}">
+            <div class="detail-time">${h.timeStr}</div>
+            <div class="detail-icon">${weatherEmoji(h.code)}</div>
+            <div class="detail-temp">${h.temp}°</div>
+            <div class="detail-feel">feels ${h.feel}°</div>
+            <div class="detail-precip">${precipStr}</div>
+            <div class="detail-wind">💨 ${h.wind} km/h</div>
+          </div>`;
+        }).join('');
+
+        // Scroll to the current hour (center it)
+        const nowSlot = el.querySelector('.detail-hour.now');
+        if (nowSlot) {
+          const scrollEl = el.parentElement;
+          const offset = nowSlot.offsetLeft - scrollEl.clientWidth / 2 + nowSlot.offsetWidth / 2;
+          scrollEl.scrollLeft = Math.max(0, offset);
+        }
+      } catch (e) {
+        console.warn('Detail forecast failed:', e);
+        el.innerHTML = '<div class="detail-placeholder">Hourly forecast unavailable.</div>';
+      }
+    }
+    loadDetailForecast();
 
 
     // ========== Google Photos album gallery ==========
