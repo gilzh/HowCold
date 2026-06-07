@@ -1148,7 +1148,7 @@
         }).format(nowLocal));
 
         // 8 tiles at 00:00, 03:00, 06:00 … 21:00
-        const SLOT_HOURS = [0, 3, 6, 9, 12, 15, 18, 21];
+        const SLOT_HOURS = [6, 9, 12, 15, 18, 21];
         const hours = j.hourly.time
           .map((t, i) => ({
             timeStr: t.slice(11, 16),  // "HH:MM"
