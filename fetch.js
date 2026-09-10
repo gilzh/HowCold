@@ -3,10 +3,7 @@
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
-
 const URL = "https://www.badi-info.ch/_temp/zuerichsee-lachen.htm";
-const RECIPIENT = "gilles.daniel@gmail.com";
 
 function fetchPage(url) {
   return new Promise((resolve, reject) => {
@@ -53,29 +50,6 @@ function parseTemperature(html) {
   return { temperature: tempMatch[1], timestamp };
 }
 
-function sendIMessage(recipient, message) {
-  const script = `
-    tell application "Messages"
-      set targetService to 1st account whose service type = iMessage
-      set targetBuddy to participant "${recipient}" of targetService
-      send "${message}" to targetBuddy
-    end tell
-  `;
-  execSync(`osascript -e '${script.replace(/'/g, "'\\''")}'`);
-}
-
-function sendEmail(recipient, subject, body) {
-  const script = `
-    tell application "Mail"
-      set newMessage to make new outgoing message with properties {subject:"${subject}", content:"${body}", visible:false}
-      tell newMessage
-        make new to recipient at end of to recipients with properties {address:"${recipient}"}
-      end tell
-      send newMessage
-    end tell
-  `;
-  execSync(`osascript -e '${script.replace(/'/g, "'\\''")}'`);
-}
 
 async function main() {
   console.log(`[${new Date().toISOString()}] Fetching water temperature for Lachen...`);
@@ -84,8 +58,6 @@ async function main() {
   const { temperature, timestamp } = parseTemperature(html);
 
   console.log(`Water: ${temperature}°C (measured ${timestamp}), Air: ${airTemp}°C`);
-
-  const message = `🌊 ${temperature}°C https://gilzh.github.io/HowCold`;
 
   // Append to CSV
   const csvPath = path.join(__dirname, "temperatures.csv");
@@ -98,13 +70,6 @@ async function main() {
   const time = now.toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" });
   fs.appendFileSync(csvPath, `${day},${time},${temperature},${airTemp}\n`);
   console.log(`Temperature logged to ${csvPath}`);
-
-  sendIMessage(RECIPIENT, message);
-  console.log(`iMessage sent to ${RECIPIENT}`);
-
-  // const subject = `Water Temperature Lachen: ${temperature}°C`;
-  // sendEmail(RECIPIENT, subject, message);
-  // console.log(`Email sent to ${RECIPIENT}`);
 }
 
 main().catch((err) => {
