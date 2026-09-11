@@ -1202,18 +1202,23 @@
     (async () => {
       const albumUrl = 'https://photos.app.goo.gl/zzYAi3nvKMS2Rd489';
       // codetabs first — allorigins frequently 408s on this album page.
+      // r.jina.ai (Markdown rendering, not raw HTML) is a third fallback since
+      // allorigins and codetabs both go down (Cloudflare 522) from time to
+      // time; it's much more compact than the raw page, hence its own
+      // (lower) stub-detection threshold below.
       const proxies = [
-        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(albumUrl),
-        'https://api.allorigins.win/raw?url=' + encodeURIComponent(albumUrl),
+        { url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(albumUrl), minLength: 5000 },
+        { url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(albumUrl), minLength: 5000 },
+        { url: 'https://r.jina.ai/' + albumUrl, minLength: 1000 },
       ];
 
       let html = null;
-      for (const url of proxies) {
+      for (const { url, minLength } of proxies) {
         try {
           const r = await fetch(url);
           if (!r.ok) continue;
           const text = await r.text();
-          if (text.length < 5000) continue; // proxy may have returned a stub
+          if (text.length < minLength) continue; // proxy may have returned a stub
           html = text;
           break;
         } catch (e) { /* try next */ }
@@ -1308,17 +1313,22 @@
 
     async function fetchLachenWater() {
       const target = 'https://www.badi-info.ch/_temp/zuerichsee-lachen.htm';
+      // allorigins/codetabs proxy the raw HTML (matched via the <b id="tN"> tag);
+      // r.jina.ai returns a Markdown rendering instead (temp comes out as **22.3**°C),
+      // so it needs its own pattern. Kept as a third fallback since allorigins and
+      // codetabs both go down (Cloudflare 522) from time to time.
       const proxies = [
         'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
         'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(target),
+        'https://r.jina.ai/' + target,
       ];
       let lastErr;
       for (const url of proxies) {
         try {
           const r = await fetch(url);
           if (!r.ok) throw new Error('proxy ' + r.status);
-          const html = await r.text();
-          const tempMatch = html.match(/<b id="t\d+">([0-9.]+)<\/b>/);
+          const text = await r.text();
+          const tempMatch = text.match(/<b id="t\d+">([0-9.]+)<\/b>/) || text.match(/\*\*([0-9]+\.[0-9])\*\*\s*°C/);
           if (!tempMatch) throw new Error('temp not found');
           return Number(tempMatch[1]);
         } catch (e) { lastErr = e; }
