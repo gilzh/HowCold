@@ -832,7 +832,7 @@
 
         <footer>
       🏊‍♀️ Sunday Morning Swimmers &middot; <a href="https://chat.whatsapp.com/EnH72JSFwQuGByphmu8cTi?mode=gi_t" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Join our WhatsApp group</a>
-      <div style="margin-top:6px;font-size:10px;color:#cbd5e0;letter-spacing:0.03em;font-variant-numeric:tabular-nums">v2026-05-24-15:42</div>
+      <div style="margin-top:6px;font-size:10px;color:#cbd5e0;letter-spacing:0.03em;font-variant-numeric:tabular-nums">v2026-09-11-11:43</div>
     </footer>
   </div>
 
@@ -1201,15 +1201,14 @@
     // without warning). Clicking a thumbnail opens a lightbox.
     (async () => {
       const albumUrl = 'https://photos.app.goo.gl/zzYAi3nvKMS2Rd489';
-      // codetabs first — allorigins frequently 408s on this album page.
-      // r.jina.ai (Markdown rendering, not raw HTML) is a third fallback since
-      // allorigins and codetabs both go down (Cloudflare 522) from time to
-      // time; it's much more compact than the raw page, hence its own
-      // (lower) stub-detection threshold below.
+      // r.jina.ai first (Markdown rendering, not raw HTML — much more compact
+      // than the raw page, hence its own lower stub-detection threshold).
+      // codetabs/allorigins are fallbacks since they intermittently go down
+      // (Cloudflare 522).
       const proxies = [
+        { url: 'https://r.jina.ai/' + albumUrl, minLength: 1000 },
         { url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(albumUrl), minLength: 5000 },
         { url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(albumUrl), minLength: 5000 },
-        { url: 'https://r.jina.ai/' + albumUrl, minLength: 1000 },
       ];
 
       let html = null;
@@ -1313,14 +1312,14 @@
 
     async function fetchLachenWater() {
       const target = 'https://www.badi-info.ch/_temp/zuerichsee-lachen.htm';
-      // allorigins/codetabs proxy the raw HTML (matched via the <b id="tN"> tag);
-      // r.jina.ai returns a Markdown rendering instead (temp comes out as **22.3**°C),
-      // so it needs its own pattern. Kept as a third fallback since allorigins and
-      // codetabs both go down (Cloudflare 522) from time to time.
+      // r.jina.ai first — returns a Markdown rendering (temp comes out as
+      // **22.3**°C), so it needs its own pattern. allorigins/codetabs proxy
+      // the raw HTML instead (matched via the <b id="tN"> tag) and are kept
+      // as fallbacks since they intermittently go down (Cloudflare 522).
       const proxies = [
+        'https://r.jina.ai/' + target,
         'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
         'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(target),
-        'https://r.jina.ai/' + target,
       ];
       let lastErr;
       for (const url of proxies) {
